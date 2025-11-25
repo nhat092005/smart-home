@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Home</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-body);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <h1 class="login-title">Welcome Back</h1>
+            <p class="login-subtitle">Sign in to access your dashboard</p>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" id="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" placeholder="••••••••" required>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                <label
+                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); cursor: pointer;">
+                    <input type="checkbox" id="remember-me"> Remember me
+                </label>
+                <a href="#"
+                    style="font-size: 0.875rem; color: var(--primary); text-decoration: none; font-weight: 500;">Forgot
+                    password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" id="login-btn">
+                Sign In
+            </button>
+
+            <button type="button" class="btn btn-outline" style="width: 100%;" id="demo-btn">
+                <i class="fa-solid fa-flask" style="margin-right: 0.5rem;"></i> Demo Mode
+            </button>
+
+            <div id="error-msg"
+                style="color: var(--danger); font-size: 0.875rem; margin-top: 1rem; text-align: center; min-height: 1.25rem;">
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { login, loginDemo } from './auth.js';
+
+        const loginForm = document.getElementById('login-form');
+        const errorMsg = document.getElementById('error-msg');
+        const loginBtn = document.getElementById('login-btn');
+        const demoBtn = document.getElementById('demo-btn');
+
+        // Demo Login Handler
+        demoBtn.addEventListener('click', async () => {
+            demoBtn.disabled = true;
+            demoBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Entering Demo...';
+            await loginDemo();
+            window.location.href = 'index.html';
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+
+            try {
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Signing in...';
+                errorMsg.textContent = '';
+
+                await login(email, password, rememberMe);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error(error);
+                errorMsg.textContent = "Invalid email or password.";
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        });
+    </script>
+</body>
+
+</html>
