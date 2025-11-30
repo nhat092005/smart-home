@@ -1,0 +1,28 @@
+menu "Button Handler Configuration"
+
+    config DEBOUNCE_TIME_MS
+        int "DEBOUNCE TIME (ms)"
+        range 0 1000
+        default 50
+
+    config BUTTON_DEVICE
+        int "BUTTON DEVICE"
+        range 0 48
+        default 32
+
+    config BUTTON_INTERVAL
+        int "BUTTON INTERVAL"
+        range 0 48
+        default 33
+
+    config BUTTON_LIGHT
+        int "BUTTON LIGHT"
+        range 0 48
+        default 25
+
+    config BUTTON_FAN
+        int "BUTTON FAN"
+        range 0 48
+        default 26
+
+endmenu
