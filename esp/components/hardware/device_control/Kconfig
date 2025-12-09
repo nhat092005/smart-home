@@ -1,0 +1,25 @@
+menu "Device Control Configuration"
+
+    config DEVICE_ACTIVE_LEVEL
+        int "Device Active Level"
+        range 0 1
+        default 1
+        help
+            0 = Active LOW (device ON when GPIO is LOW)
+            1 = Active HIGH (device ON when GPIO is HIGH)
+
+    config DEVICE_FAN_PIN
+        int "Fan Control GPIO"
+        range 0 48
+        default 16
+        help
+            GPIO pin number for controlling the fan device.
+
+    config DEVICE_LIGHT_PIN
+        int "Light Control GPIO"
+        range 0 48
+        default 17
+        help
+            GPIO pin number for controlling the light device.
+
+endmenu
