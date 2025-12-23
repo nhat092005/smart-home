@@ -13,15 +13,25 @@
 #include <stdbool.h>
 
 /* Private defines -----------------------------------------------------------*/
-#define FIRMWARE_VERSION "1.0.0" // Firmware version
+#define FIRMWARE_VERSION "1.0" // Firmware version
 
 #define DEFAULT_INTERVAL 5       // Default publish interval in seconds
-#define MIN_INTERVAL 5           // Minimum interval
-#define MAX_INTERVAL 3600        // Maximum interval (1 hour)
+#define MIN_INTERVAL 1           // Minimum interval
+#define MAX_INTERVAL 3600        // Maximum interval 1 hour
 #define STATE_BACKUP_INTERVAL 60 // Publish state every 60 seconds
 
-/* External variables --------------------------------------------------------*/
+/* Exported variables --------------------------------------------------------*/
+
+/**
+ * @brief Global device mode state
+ *
+ * @note true if mode is ON, false if OFF
+ */
 extern bool isModeON;
+
+/**
+ * @brief Data publish interval in seconds
+ */
 extern unsigned int interval_seconds;
 
 /* Exported types ------------------------------------------------------------*/
@@ -32,7 +42,7 @@ extern unsigned int interval_seconds;
 typedef enum
 {
     MODE_OFF = 0, //!< Device off
-    MODE_ON       //!< Device on (normal operation)
+    MODE_ON = 1   //!< Device on (normal operation)
 } device_mode_t;
 
 /**
@@ -50,7 +60,7 @@ typedef void (*mode_change_callback_t)(device_mode_t old_mode, device_mode_t new
  *
  * @return ESP_OK on success, error code otherwise
  *
- * @note Loads saved mode from NVS or defaults to MODE_OFF
+ * @note Loads saved mode from NVS or defaults to MODE_ON
  */
 esp_err_t mode_manager_init(void);
 
@@ -75,7 +85,7 @@ esp_err_t mode_manager_toggle_mode(void);
 /**
  * @brief Get current device operation mode
  *
- * @return Current mode (MODE_OFF or MODE_ON)
+ * @return Current mode MODE_OFF or MODE_ON
  */
 device_mode_t mode_manager_get_mode(void);
 

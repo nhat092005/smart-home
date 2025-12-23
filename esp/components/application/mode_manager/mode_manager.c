@@ -21,6 +21,10 @@
 // Default mode
 #define DEFAULT_MODE MODE_ON
 
+/* Exported variables --------------------------------------------------------*/
+
+bool isModeON = false; //!< Global mode state indicator (true if mode is ON, false if OFF)
+
 /* Private variables ---------------------------------------------------------*/
 
 static const char *TAG = "MODE_MANAGER";
@@ -67,11 +71,11 @@ esp_err_t mode_manager_init(void)
 {
     if (initialized)
     {
-        ESP_LOGW(TAG, "Mode manager already initialized");
+        ESP_LOGW(TAG, "Mode Manager already initialized");
         return ESP_OK;
     }
 
-    ESP_LOGI(TAG, "Initializing mode manager");
+    ESP_LOGI(TAG, "Initializing Mode Manager");
 
     esp_err_t ret = mode_manager_load_mode_from_nvs();
     if (ret != ESP_OK)
@@ -91,7 +95,7 @@ esp_err_t mode_manager_init(void)
         isModeON = false;
     }
 
-    ESP_LOGI(TAG, "Mode manager initialized successfully, current mode: %s",
+    ESP_LOGI(TAG, "Mode Manager initialized successfully, current mode: %s",
              mode_manager_get_mode_name(current_mode));
 
     return ESP_OK;
@@ -104,7 +108,7 @@ esp_err_t mode_manager_set_mode(device_mode_t mode)
 {
     if (!initialized)
     {
-        ESP_LOGE(TAG, "Mode manager not initialized");
+        ESP_LOGE(TAG, "Mode Manager not initialized");
         return ESP_ERR_INVALID_STATE;
     }
 
@@ -134,7 +138,7 @@ esp_err_t mode_manager_set_mode(device_mode_t mode)
 
     if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "Failed to save mode to NVS");
+        ESP_LOGE(TAG, "Failed to save Mode to NVS");
     }
 
     if (change_callback != NULL)
@@ -149,7 +153,7 @@ esp_err_t mode_manager_toggle_mode(void)
 {
     if (!initialized)
     {
-        ESP_LOGE(TAG, "Mode manager not initialized");
+        ESP_LOGE(TAG, "Mode Manager not initialized");
         return ESP_ERR_INVALID_STATE;
     }
 
@@ -172,7 +176,7 @@ device_mode_t mode_manager_get_mode(void)
 void mode_manager_register_change_callback(mode_change_callback_t callback)
 {
     change_callback = callback;
-    ESP_LOGI(TAG, "Mode change callback registered");
+    ESP_LOGI(TAG, "Mode Manager change callback registered");
 }
 
 /* Private functions ---------------------------------------------------------*/
@@ -199,11 +203,11 @@ static esp_err_t mode_manager_load_mode_from_nvs(void)
     if (ret == ESP_OK)
     {
         current_mode = (device_mode_t)mode_val;
-        ESP_LOGI(TAG, "Loaded mode: %s", mode_manager_get_mode_name(current_mode));
+        ESP_LOGI(TAG, "Loaded Mode: %s", mode_manager_get_mode_name(current_mode));
     }
     else
     {
-        ESP_LOGW(TAG, "Cannot read mode (%s), using default: %s",
+        ESP_LOGW(TAG, "Cannot read Mode (%s), using default: %s",
                  esp_err_to_name(ret), mode_manager_get_mode_name(DEFAULT_MODE));
         ret = ESP_OK;
     }
@@ -228,7 +232,7 @@ static esp_err_t mode_manager_save_mode_to_nvs(device_mode_t mode)
     ret = nvs_set_u8(nvs_handle, NVS_KEY_MODE, (uint8_t)mode);
     if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "Failed to write mode to NVS: %s", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "Failed to write Mode to NVS: %s", esp_err_to_name(ret));
         nvs_close(nvs_handle);
         return ret;
     }
