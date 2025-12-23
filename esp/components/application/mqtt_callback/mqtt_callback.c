@@ -28,6 +28,7 @@ static mqtt_cmd_set_device_cb_t on_set_device_cb = NULL;
 static mqtt_cmd_set_devices_cb_t on_set_devices_cb = NULL;
 static mqtt_cmd_set_mode_cb_t on_set_mode_cb = NULL;
 static mqtt_cmd_set_interval_cb_t on_set_interval_cb = NULL;
+static mqtt_cmd_set_timestamp_cb_t on_set_timestamp_cb = NULL;
 static mqtt_cmd_get_status_cb_t on_get_status_cb = NULL;
 static mqtt_cmd_reboot_cb_t on_reboot_cb = NULL;
 static mqtt_cmd_factory_reset_cb_t on_factory_reset_cb = NULL;
@@ -142,6 +143,15 @@ void mqtt_callback_register_on_set_interval(mqtt_cmd_set_interval_cb_t callback)
 {
     on_set_interval_cb = callback;
     ESP_LOGI(TAG, "Registered: on_set_interval");
+}
+
+/**
+ * @brief Callback registration API
+ */
+void mqtt_callback_register_on_set_timestamp(mqtt_cmd_set_timestamp_cb_t callback)
+{
+    on_set_timestamp_cb = callback;
+    ESP_LOGI(TAG, "Registered: on_set_timestamp");
 }
 
 /**
@@ -294,6 +304,21 @@ void mqtt_callback_invoke_set_interval(const char *cmd_id, int interval)
 /**
  * @brief Callback invocation APIs
  */
+void mqtt_callback_invoke_set_timestamp(const char *cmd_id, uint32_t timestamp)
+{
+    if (on_set_timestamp_cb)
+    {
+        on_set_timestamp_cb(cmd_id, timestamp);
+    }
+    else
+    {
+        ESP_LOGW(TAG, "[%s] No callback for: set_timestamp", cmd_id);
+    }
+}
+
+/**
+ * @brief Callback invocation APIs
+ */
 void mqtt_callback_invoke_get_status(const char *cmd_id)
 {
     if (on_get_status_cb)
@@ -395,6 +420,12 @@ static void mqtt_callback_internal_command_handler(const char *cmd_id, const cha
     {
         int interval = json_helper_get_int(params, "interval", 0);
         mqtt_callback_invoke_set_interval(cmd_id, interval);
+    }
+    /* Command: set_timestamp */
+    else if (strcmp(command, "set_timestamp") == 0)
+    {
+        uint32_t timestamp = (uint32_t)json_helper_get_int(params, "timestamp", 0);
+        mqtt_callback_invoke_set_timestamp(cmd_id, timestamp);
     }
     /* Command: get_status */
     else if (strcmp(command, "get_status") == 0)

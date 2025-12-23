@@ -28,6 +28,7 @@ typedef void (*mqtt_cmd_set_device_cb_t)(const char *cmd_id, const char *device,
 typedef void (*mqtt_cmd_set_devices_cb_t)(const char *cmd_id, int fan, int light, int ac);
 typedef void (*mqtt_cmd_set_mode_cb_t)(const char *cmd_id, int mode);
 typedef void (*mqtt_cmd_set_interval_cb_t)(const char *cmd_id, int interval);
+typedef void (*mqtt_cmd_set_timestamp_cb_t)(const char *cmd_id, uint32_t timestamp);
 typedef void (*mqtt_cmd_get_status_cb_t)(const char *cmd_id);
 typedef void (*mqtt_cmd_reboot_cb_t)(const char *cmd_id);
 typedef void (*mqtt_cmd_factory_reset_cb_t)(const char *cmd_id);
@@ -47,6 +48,7 @@ void mqtt_callback_register_on_set_device(mqtt_cmd_set_device_cb_t callback);
 void mqtt_callback_register_on_set_devices(mqtt_cmd_set_devices_cb_t callback);
 void mqtt_callback_register_on_set_mode(mqtt_cmd_set_mode_cb_t callback);
 void mqtt_callback_register_on_set_interval(mqtt_cmd_set_interval_cb_t callback);
+void mqtt_callback_register_on_set_timestamp(mqtt_cmd_set_timestamp_cb_t callback);
 void mqtt_callback_register_on_get_status(mqtt_cmd_get_status_cb_t callback);
 void mqtt_callback_register_on_reboot(mqtt_cmd_reboot_cb_t callback);
 void mqtt_callback_register_on_factory_reset(mqtt_cmd_factory_reset_cb_t callback);
@@ -121,6 +123,14 @@ void mqtt_callback_invoke_set_mode(const char *cmd_id, int mode);
  * @param[in] interval Interval value
  */
 void mqtt_callback_invoke_set_interval(const char *cmd_id, int interval);
+
+/**
+ * @brief Callback invocation set timestamp command
+ *
+ * @param[in] cmd_id Command ID
+ * @param[in] timestamp Unix timestamp value
+ */
+void mqtt_callback_invoke_set_timestamp(const char *cmd_id, uint32_t timestamp);
 
 /**
  * @brief Callback invocation get status command
