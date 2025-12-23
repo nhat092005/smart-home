@@ -55,12 +55,12 @@ esp_err_t sensor_manager_init_default(void);
  * - SHT3x for temperature and humidity
  * - BH1750 for light intensity
  *
- * @note After initialization, use sensor_reader.h functions to read data
- *
  * @param[in] sda GPIO pin number for I2C SDA line
  * @param[in] scl GPIO pin number for I2C SCL line
  *
  * @return ESP_OK on success, error code otherwise
+ *
+ * @note After initialization, use sensor_reader.h functions to read data
  */
 esp_err_t sensor_manager_init(gpio_num_t sda, gpio_num_t scl);
 
@@ -72,6 +72,15 @@ esp_err_t sensor_manager_init(gpio_num_t sda, gpio_num_t scl);
  * @return ESP_OK on success, error code otherwise
  */
 esp_err_t sensor_manager_get_status(sensor_status_t *status);
+
+/**
+ * @brief Get current timestamp from DS3231 RTC
+ *
+ * @param[out] timestamp Unix timestamp in seconds
+ *
+ * @return ESP_OK on success, error code otherwise
+ */
+esp_err_t sensor_manager_get_timestamp(uint32_t *timestamp);
 
 /**
  * @brief Deinitialize sensor manager and free resources

@@ -30,7 +30,7 @@ bool sht3x_ready = false;
 bool bh1750_ready = false;
 
 // I2C configuration
-static int i2c_port = 0;  // I2C port 0
+static int i2c_port = 0; // I2C port 0
 
 /* Exported functions --------------------------------------------------------*/
 
@@ -217,6 +217,27 @@ esp_err_t sensor_manager_deinit(void)
 
     initialized = false;
     ESP_LOGI(TAG, "Sensor manager deinitialized");
+
+    return ESP_OK;
+}
+
+/**
+ * @brief Get current timestamp from DS3231 RTC
+ */
+esp_err_t sensor_manager_get_timestamp(uint32_t *timestamp)
+{
+    if (!ds3231_ready)
+    {
+        ESP_LOGW(TAG, "DS3231 not ready");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    esp_err_t ret = ds3231_get_timestamp(&ds3231_dev, timestamp);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to get timestamp from DS3231: %s", esp_err_to_name(ret));
+        return ret;
+    }
 
     return ESP_OK;
 }
