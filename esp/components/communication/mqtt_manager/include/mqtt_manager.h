@@ -15,6 +15,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/* Exported variables --------------------------------------------------------*/
+
+/**
+ * @brief Global MQTT connection state
+ *
+ * @note true when MQTT client is connected to broker, false otherwise
+ */
+extern bool isMQTT;
+
 /* Exported types ------------------------------------------------------------*/
 
 /**

@@ -21,6 +21,10 @@
 #define MQTT_CMD_ID_MAX_LEN 8
 #define MQTT_CMD_MAX_LEN 32
 
+/* Exported variables --------------------------------------------------------*/
+
+bool isMQTT = false; //!< Global MQTT connection state indicator
+
 /* Private variables ---------------------------------------------------------*/
 
 static const char *TAG = "MQTT_MANAGER";
@@ -149,6 +153,7 @@ esp_err_t mqtt_manager_stop(void)
 
     esp_mqtt_client_stop(mqtt_client);
     mqtt_connected = false;
+    isMQTT = false; // Update global state
 
     ESP_LOGI(TAG, "MQTT client stopped");
     return ESP_OK;
@@ -372,6 +377,7 @@ static void mqtt_manager_event_handler(void *handler_args, esp_event_base_t base
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT Connected to broker");
 
+        isMQTT = true; // Update global state
         mqtt_connected = true;
 
         // Subscribe to command topic
@@ -388,6 +394,7 @@ static void mqtt_manager_event_handler(void *handler_args, esp_event_base_t base
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGW(TAG, "MQTT Disconnected");
 
+        isMQTT = false; // Update global state
         mqtt_connected = false;
 
         // Notify application
