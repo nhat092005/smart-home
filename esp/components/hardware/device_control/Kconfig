@@ -22,4 +22,11 @@ menu "Device Control Configuration"
         help
             GPIO pin number for controlling the light device.
 
+    config DEVICE_AC_PIN
+        int "AC Control GPIO"
+        range 0 48
+        default 19
+        help
+            GPIO pin number for controlling the AC device.
+
 endmenu

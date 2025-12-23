@@ -30,8 +30,10 @@ typedef struct
 
 // Device configuration table
 static device_t devices[DEVICE_MAX] = {
-    {DEVICE_FAN_PIN, "FAN", DEVICE_OFF},      //!< Fan device
-    {DEVICE_LIGHT_PIN, "LIGHT", DEVICE_OFF}}; //!< Light device
+    {DEVICE_FAN_PIN, "FAN", DEVICE_OFF},     //!< Fan device
+    {DEVICE_LIGHT_PIN, "LIGHT", DEVICE_OFF}, //!< Light device
+    {DEVICE_AC_PIN, "AC", DEVICE_OFF}        //!< AC device
+};
 static bool initialized = false;
 static SemaphoreHandle_t mutex = NULL;
 
