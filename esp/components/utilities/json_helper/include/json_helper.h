@@ -17,69 +17,6 @@
 /* Exported functions --------------------------------------------------------*/
 
 /**
- * @brief Create sensor data JSON string
- *
- * Format: {"timestamp": 1701388800, "temperature": 25.6, "humidity": 65.2, "light": 450, "interval": 30}
- *
- * @param[in] timestamp Unix timestamp in seconds
- * @param[in] temperature Temperature in Celsius
- * @param[in] humidity Humidity in percentage
- * @param[in] light Light level (lux)
- * @param[in] interval Measurement interval (seconds)
- *
- * @return JSON string (caller must free) or NULL on error
- */
-char *json_helper_create_sensor_data(uint32_t timestamp, float temperature, float humidity, int light, int interval);
-
-/**
- * @brief Create device status JSON string
- *
- * Format: {"timestamp": 1701388800, "online": true, "wifi_ssid": "MyWiFi", "wifi_rssi": -62,
- *          "ip": "192.168.1.100", "uptime": 86400, "heap_free": 245760, "firmware_version": "1.0.2"}
- *
- * @param[in] timestamp Unix timestamp in seconds
- * @param[in] online Device online status
- * @param[in] wifi_ssid WiFi SSID (can be NULL)
- * @param[in] wifi_rssi WiFi signal strength
- * @param[in] ip_address IP address string (can be NULL)
- * @param[in] uptime Uptime in seconds
- * @param[in] heap_free Free heap memory in bytes
- * @param[in] firmware_version Firmware version string
- *
- * @return JSON string (caller must free) or NULL on error
- */
-char *json_helper_create_status(uint32_t timestamp, bool online, const char *wifi_ssid, int8_t wifi_rssi,
-                                const char *ip_address, uint32_t uptime,
-                                uint32_t heap_free, const char *firmware_version);
-
-/**
- * @brief Create command response JSON string
- *
- * Format: {"timestamp": 1701388800, "cmd": "set_led", "status": "success", "message": "LED turned on"}
- *
- * @param[in] timestamp Unix timestamp in seconds
- * @param[in] cmd Command name
- * @param[in] success Success status (true = "success", false = "error")
- * @param[in] message Response message
- *
- * @return JSON string (caller must free) or NULL on error
- */
-char *json_helper_create_response(uint32_t timestamp, const char *cmd, bool success, const char *message);
-
-/**
- * @brief Parse command from JSON string
- *
- * Extracts command name and returns the parsed JSON object for further processing
- *
- * @param[in] json_str JSON string to parse
- * @param[out] cmd Output buffer for command name
- * @param[in] cmd_len Size of cmd buffer
- *
- * @return cJSON object (caller must cJSON_Delete) or NULL on error
- */
-cJSON *json_helper_parse_command(const char *json_str, char *cmd, size_t cmd_len);
-
-/**
  * @brief Get string value from JSON object safely
  *
  * @param[in] object JSON object
@@ -124,21 +61,84 @@ int json_helper_get_int(cJSON *object, const char *key, int default_val);
 bool json_helper_get_bool(cJSON *object, const char *key, bool default_val);
 
 /**
- * @brief Create WiFi scan result JSON array
+ * @brief Create sensor data JSON string for /data topic
  *
- * Format: [{"ssid": "Network1", "rssi": -45, "auth": 3}, ...]
+ * @param[in] timestamp Unix timestamp in seconds
+ * @param[in] temperature Temperature in Celsius
+ * @param[in] humidity Humidity in percentage
+ * @param[in] light Light level (lux)
+ *
+ * @return JSON string (caller must free) or NULL on error
+ *
+ * @note Format: {"timestamp": 1701388800, "temperature": 25.6, "humidity": 65.2, "light": 450}
+ */
+char *json_helper_create_data(uint32_t timestamp, float temperature, float humidity, int light);
+
+/**
+ * @brief Create device state JSON string for /state topic
+ *
+ * @param[in] timestamp Unix timestamp in seconds
+ * @param[in] mode Mode state (1=ON, 0=OFF)
+ * @param[in] fan Fan state (1=ON, 0=OFF)
+ * @param[in] light Light state (1=ON, 0=OFF)
+ * @param[in] ac AC state (1=ON, 0=OFF)
+ * @param[in] interval Data reporting interval in seconds
+ *
+ * @return JSON string (caller must free) or NULL on error
+ *
+ * @note Format: {"timestamp": 1701388800, "mode": 1, "interval": 5, "fan": 1, "light": 1, "ac": 1}
+ */
+char *json_helper_create_state(uint32_t timestamp, int mode, int interval, int fan, int light, int ac);
+
+/**
+ * @brief Create device info JSON string for /info topic
+ *
+ * @param[in] timestamp Unix timestamp in seconds
+ * @param[in] device_id Device identifier
+ * @param[in] ssid WiFi SSID
+ * @param[in] ip IP address string
+ * @param[in] broker MQTT broker URI
+ * @param[in] firmware Firmware version string
+ *
+ * @return JSON string (caller must free) or NULL on error
+ *
+ * @note Format: {"timestamp": 1701388800, "id": "esp_01", "ssid": "MyHomeWiFi",
+ *               "ip": "192.168.1.100", "broker": "mqtt://192.168.1.20:1883",
+ *               "firmware": "1.0.0"}
+ */
+char *json_helper_create_info(uint32_t timestamp, const char *device_id, const char *ssid,
+                              const char *ip, const char *broker, const char *firmware);
+
+/**
+ * @brief Parse command from JSON string
+ *
+ * @param[in] json_str JSON string to parse
+ * @param[out] cmd_id Output buffer for command ID (min 5 bytes)
+ * @param[in] cmd_id_len Size of cmd_id buffer
+ * @param[out] command Output buffer for command name (min 32 bytes)
+ * @param[in] command_len Size of command buffer
+ *
+ * @return cJSON object (caller must cJSON_Delete) or NULL on error
+ *
+ * @note Call cJSON_GetObjectItem(result, "params") to get params object
+ */
+cJSON *json_helper_parse_command(const char *json_str, char *cmd_id, size_t cmd_id_len,
+                                 char *command, size_t command_len);
+
+/**
+ * @brief Create WiFi scan result JSON array
  *
  * @param[in] ap_list Array of WiFi access point records
  * @param[in] ap_count Number of access points
  *
  * @return JSON string (caller must free) or NULL on error
+ *
+ * @note Format: {"ssid": "Network1", "rssi": -45, "auth": 3}, ...
  */
 char *json_helper_create_wifi_scan_result(const void *ap_list, uint16_t ap_count);
 
 /**
  * @brief Parse WiFi credentials from JSON
- *
- * Extracts SSID and password from JSON object {"ssid": "...", "password": "..."}
  *
  * @param[in] json_str JSON string to parse
  * @param[out] ssid_out Output buffer for SSID
@@ -147,6 +147,8 @@ char *json_helper_create_wifi_scan_result(const void *ap_list, uint16_t ap_count
  * @param[in] password_len Size of password buffer
  *
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if invalid
+ *
+ * @note Extracts SSID and password from JSON object {"ssid": "...", "password": "..."}
  */
 esp_err_t json_helper_parse_wifi_credentials(const char *json_str,
                                              char *ssid_out, size_t ssid_len,
@@ -155,14 +157,14 @@ esp_err_t json_helper_parse_wifi_credentials(const char *json_str,
 /**
  * @brief Create WiFi status JSON
  *
- * Format: {"connected": true, "provisioned": true, "ip": "192.168.1.100", "rssi": -45}
- *
  * @param[in] connected WiFi connection status
  * @param[in] provisioned Provisioning status
  * @param[in] ip_address IP address string (can be NULL)
  * @param[in] rssi Signal strength (ignored if not connected)
  *
  * @return JSON string (caller must free) or NULL on error
+ *
+ * @note Format: {"connected": true, "provisioned": true, "ip": "192.168.1.100", "rssi": -45}
  */
 char *json_helper_create_wifi_status(bool connected, bool provisioned,
                                      const char *ip_address, int8_t rssi);
@@ -170,12 +172,12 @@ char *json_helper_create_wifi_status(bool connected, bool provisioned,
 /**
  * @brief Create simple response JSON
  *
- * Format: {"status": "ok", "message": "Success"}
- *
  * @param[in] status Status string ("ok", "error", etc.)
  * @param[in] message Response message
  *
  * @return JSON string (caller must free) or NULL on error
+ *
+ * @note Format: {"status": "ok", "message": "Success"}
  */
 char *json_helper_create_simple_response(const char *status, const char *message);
 

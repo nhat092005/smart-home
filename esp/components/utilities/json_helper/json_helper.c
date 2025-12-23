@@ -12,164 +12,11 @@
 #include <string.h>
 #include <time.h>
 
-/* Private defines -----------------------------------------------------------*/
-
-// JSON response status strings
-#define JSON_STATUS_SUCCESS "success"
-#define JSON_STATUS_ERROR "error"
-
 /* Private variables ---------------------------------------------------------*/
 
 static const char *TAG = "JSON_HELPER";
 
 /* Exported functions --------------------------------------------------------*/
-
-/**
- * @brief Create sensor data JSON string
- */
-char *json_helper_create_sensor_data(uint32_t timestamp, float temperature, float humidity, int light, int interval)
-{
-    cJSON *root = cJSON_CreateObject();
-    if (root == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to create JSON object");
-        return NULL;
-    }
-
-    cJSON_AddNumberToObject(root, "timestamp", timestamp);
-    cJSON_AddNumberToObject(root, "temperature", temperature);
-    cJSON_AddNumberToObject(root, "humidity", humidity);
-    cJSON_AddNumberToObject(root, "light", light);
-    cJSON_AddNumberToObject(root, "interval", interval);
-
-    char *json_str = cJSON_PrintUnformatted(root);
-    cJSON_Delete(root);
-
-    if (json_str == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to print JSON");
-        return NULL;
-    }
-
-    return json_str;
-}
-
-/**
- * @brief Create device status JSON string
- */
-char *json_helper_create_status(uint32_t timestamp, bool online, const char *wifi_ssid, int8_t wifi_rssi,
-                                const char *ip_address, uint32_t uptime,
-                                uint32_t heap_free, const char *firmware_version)
-{
-    cJSON *root = cJSON_CreateObject();
-    if (root == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to create JSON object");
-        return NULL;
-    }
-
-    cJSON_AddNumberToObject(root, "timestamp", timestamp);
-    cJSON_AddBoolToObject(root, "online", online);
-
-    if (wifi_ssid != NULL)
-    {
-        cJSON_AddStringToObject(root, "wifi_ssid", wifi_ssid);
-    }
-
-    cJSON_AddNumberToObject(root, "wifi_rssi", wifi_rssi);
-
-    if (ip_address != NULL)
-    {
-        cJSON_AddStringToObject(root, "ip", ip_address);
-    }
-
-    cJSON_AddNumberToObject(root, "uptime", uptime);
-    cJSON_AddNumberToObject(root, "heap_free", heap_free);
-
-    if (firmware_version != NULL)
-    {
-        cJSON_AddStringToObject(root, "firmware_version", firmware_version);
-    }
-
-    char *json_str = cJSON_PrintUnformatted(root);
-    cJSON_Delete(root);
-
-    if (json_str == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to print JSON");
-        return NULL;
-    }
-
-    return json_str;
-}
-
-/**
- * @brief Create command response JSON string
- */
-char *json_helper_create_response(uint32_t timestamp, const char *cmd, bool success, const char *message)
-{
-    if (cmd == NULL || message == NULL)
-    {
-        ESP_LOGE(TAG, "Invalid parameters: cmd or message is NULL");
-        return NULL;
-    }
-
-    cJSON *root = cJSON_CreateObject();
-    if (root == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to create JSON object");
-        return NULL;
-    }
-
-    cJSON_AddNumberToObject(root, "timestamp", timestamp);
-    cJSON_AddStringToObject(root, "cmd", cmd);
-    cJSON_AddStringToObject(root, "status", success ? JSON_STATUS_SUCCESS : JSON_STATUS_ERROR);
-    cJSON_AddStringToObject(root, "message", message);
-
-    char *json_str = cJSON_PrintUnformatted(root);
-    cJSON_Delete(root);
-
-    if (json_str == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to print JSON");
-        return NULL;
-    }
-
-    return json_str;
-}
-
-/**
- * @brief Parse command from JSON string
- */
-cJSON *json_helper_parse_command(const char *json_str, char *cmd, size_t cmd_len)
-{
-    if (json_str == NULL || cmd == NULL || cmd_len == 0)
-    {
-        ESP_LOGE(TAG, "Invalid parameters");
-        return NULL;
-    }
-
-    cJSON *root = cJSON_Parse(json_str);
-    if (root == NULL)
-    {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        ESP_LOGE(TAG, "JSON parse error: %s", error_ptr ? error_ptr : "unknown");
-        return NULL;
-    }
-
-    cJSON *cmd_item = cJSON_GetObjectItem(root, "cmd");
-    if (!cJSON_IsString(cmd_item))
-    {
-        ESP_LOGE(TAG, "Command field not found or not a string");
-        cJSON_Delete(root);
-        return NULL;
-    }
-
-    strncpy(cmd, cmd_item->valuestring, cmd_len - 1);
-    cmd[cmd_len - 1] = '\0';
-
-    return root;
-}
 
 /**
  * @brief Get string value from JSON object safely
@@ -248,6 +95,167 @@ bool json_helper_get_bool(cJSON *object, const char *key, bool default_val)
 }
 
 /**
+ * @brief Create sensor data JSON string
+ */
+char *json_helper_create_data(uint32_t timestamp, float temperature, float humidity, int light)
+{
+    cJSON *root = cJSON_CreateObject();
+    if (root == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create JSON object");
+        return NULL;
+    }
+
+    cJSON_AddNumberToObject(root, "timestamp", timestamp);
+    cJSON_AddNumberToObject(root, "temperature", temperature);
+    cJSON_AddNumberToObject(root, "humidity", humidity);
+    cJSON_AddNumberToObject(root, "light", light);
+
+    char *json_str = cJSON_Print(root);
+    cJSON_Delete(root);
+
+    if (json_str == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to print JSON");
+        return NULL;
+    }
+
+    return json_str;
+}
+
+/**
+ * @brief Create device state JSON string
+ */
+char *json_helper_create_state(uint32_t timestamp, int mode, int interval, int fan, int light, int ac)
+{
+    cJSON *root = cJSON_CreateObject();
+    if (root == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create JSON object");
+        return NULL;
+    }
+
+    cJSON_AddNumberToObject(root, "timestamp", timestamp);
+    cJSON_AddNumberToObject(root, "mode", mode);
+    cJSON_AddNumberToObject(root, "interval", interval);
+    cJSON_AddNumberToObject(root, "fan", fan);
+    cJSON_AddNumberToObject(root, "light", light);
+    cJSON_AddNumberToObject(root, "ac", ac);
+
+    char *json_str = cJSON_Print(root);
+    cJSON_Delete(root);
+
+    if (json_str == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to print JSON");
+        return NULL;
+    }
+
+    return json_str;
+}
+
+/**
+ * @brief Create device info JSON string
+ */
+char *json_helper_create_info(uint32_t timestamp, const char *device_id, const char *ssid,
+                              const char *ip, const char *broker, const char *firmware)
+{
+    cJSON *root = cJSON_CreateObject();
+    if (root == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create JSON object");
+        return NULL;
+    }
+
+    cJSON_AddNumberToObject(root, "timestamp", timestamp);
+
+    if (device_id != NULL)
+    {
+        cJSON_AddStringToObject(root, "id", device_id);
+    }
+
+    if (ssid != NULL)
+    {
+        cJSON_AddStringToObject(root, "ssid", ssid);
+    }
+
+    if (ip != NULL)
+    {
+        cJSON_AddStringToObject(root, "ip", ip);
+    }
+
+    if (broker != NULL)
+    {
+        cJSON_AddStringToObject(root, "broker", broker);
+    }
+
+    if (firmware != NULL)
+    {
+        cJSON_AddStringToObject(root, "firmware", firmware);
+    }
+
+    char *json_str = cJSON_Print(root);
+    cJSON_Delete(root);
+
+    if (json_str == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to print JSON");
+        return NULL;
+    }
+
+    return json_str;
+}
+
+/**
+ * @brief Parse command from JSON string
+ */
+cJSON *json_helper_parse_command(const char *json_str, char *cmd_id, size_t cmd_id_len,
+                                 char *command, size_t command_len)
+{
+    if (json_str == NULL || cmd_id == NULL || command == NULL ||
+        cmd_id_len == 0 || command_len == 0)
+    {
+        ESP_LOGE(TAG, "Invalid parameters");
+        return NULL;
+    }
+
+    cJSON *root = cJSON_Parse(json_str);
+    if (root == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        ESP_LOGE(TAG, "JSON parse error: %s", error_ptr ? error_ptr : "unknown");
+        return NULL;
+    }
+
+    // Extract "id" field
+    cJSON *id_item = cJSON_GetObjectItem(root, "id");
+    if (!cJSON_IsString(id_item))
+    {
+        ESP_LOGE(TAG, "Command ID field not found or not a string");
+        cJSON_Delete(root);
+        return NULL;
+    }
+
+    strncpy(cmd_id, id_item->valuestring, cmd_id_len - 1);
+    cmd_id[cmd_id_len - 1] = '\0';
+
+    // Extract "command" field
+    cJSON *cmd_item = cJSON_GetObjectItem(root, "command");
+    if (!cJSON_IsString(cmd_item))
+    {
+        ESP_LOGE(TAG, "Command field not found or not a string");
+        cJSON_Delete(root);
+        return NULL;
+    }
+
+    strncpy(command, cmd_item->valuestring, command_len - 1);
+    command[command_len - 1] = '\0';
+
+    // Return root object so caller can access "params"
+    return root;
+}
+
+/**
  * @brief Create WiFi scan result JSON array
  */
 char *json_helper_create_wifi_scan_result(const void *ap_list, uint16_t ap_count)
@@ -288,7 +296,7 @@ char *json_helper_create_wifi_scan_result(const void *ap_list, uint16_t ap_count
         cJSON_AddItemToArray(root, item);
     }
 
-    char *json_str = cJSON_PrintUnformatted(root);
+    char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
 
     if (json_str == NULL)
@@ -394,7 +402,7 @@ char *json_helper_create_wifi_status(bool connected, bool provisioned,
         cJSON_AddNumberToObject(root, "rssi", rssi);
     }
 
-    char *json_str = cJSON_PrintUnformatted(root);
+    char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
 
     if (json_str == NULL)
@@ -427,7 +435,7 @@ char *json_helper_create_simple_response(const char *status, const char *message
     cJSON_AddStringToObject(root, "status", status);
     cJSON_AddStringToObject(root, "message", message);
 
-    char *json_str = cJSON_PrintUnformatted(root);
+    char *json_str = cJSON_Print(root);
     cJSON_Delete(root);
 
     if (json_str == NULL)
