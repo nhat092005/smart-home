@@ -1,7 +1,7 @@
 /**
  * @file task_manager.h
  *
- * @brief Task Manager API
+ * @brief Task Manager API Registry
  */
 
 #ifndef TASK_MANAGER_H
@@ -10,105 +10,44 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include "esp_err.h"
+
+// Component headers
+#include "task_init.h"
+#include "task_button.h"
+#include "task_status.h"
+#include "task_wifi.h"
+#include "task_mqtt.h"
+#include "task_mode.h"
+#include "task_display.h"
+
+// Manager headers
 #include "button_handler.h"
 #include "device_control.h"
 #include "status_led.h"
 #include "mode_manager.h"
 #include "sensor_manager.h"
+#include "sensor_reader.h"
 #include "wifi_manager.h"
 #include "mqtt_manager.h"
 
-/* External variables ---------------------------------------------------------*/
+/* Exported defines ----------------------------------------------------------*/
 
-/* Exported variables --------------------------------------------------------*/
+#define VERSION_APP         CONFIG_VERSION_APP
+#define INTERVAL_TIME_MS    CONFIG_INTERVAL_TIME_MS
 
-extern bool isModeON;
-extern bool isWiFi;
-extern bool isMQTT;
-
-/* Exported functions --------------------------------------------------------*/
+/* External variables --------------------------------------------------------*/
 
 /**
- * @brief Initialize system components
+ * @brief Global state flags (defined in respective managers)
  */
-void task_init(void);
+extern bool isModeON; //!< Device mode state (mode_manager.c)
+extern bool isWiFi;   //!< WiFi connection state (wifi_manager.c)
+extern bool isMQTT;   //!< MQTT connection state (mqtt_manager.c)
 
 /**
- * @brief Initialize button processing task and queue
- *
- * @return ESP_OK on success, error code otherwise
+ * @brief Exported variables definitions
  */
-esp_err_t task_button_init(void);
-
-/**
- * @brief Button interval callback functions
- *
- * @param[in] button Button type
- */
-void task_button_wifi_pressed(button_type_t button);
-
-/**
- * @brief Button device callback functions
- *
- * @param[in] button Button type
- */
-void task_button_mode_pressed(button_type_t button);
-
-/**
- * @brief Button light callback functions
- *
- * @param[in] button Button type
- */
-void task_button_light_pressed(button_type_t button);
-
-/**
- * @brief Button fan callback functions
- *
- * @param[in] button Button type
- */
-void task_button_fan_pressed(button_type_t button);
-
-/**
- * @brief Button ac callback implementations
- *
- * @param[in] button Button type
- */
-void task_button_ac_pressed(button_type_t button);
-
-/**
- * @brief Task polling LED
- *
- * @return ESP_OK on success, error code otherwise
- */
-esp_err_t task_status_set_init(void);
-
-/**
- * @brief WiFi event callback handler
- *
- * @param[in] event WiFi manager event
- * @param[in] data Event data
- */
-void task_wifi_event_callback(wifi_manager_event_t event, void *data);
-
-/**
- * @brief Initialize WiFi connecting task
- *
- * @return ESP_OK on success, error code otherwise
- */
-esp_err_t task_wifi_set_wifi_connecting_init(void);
-
-/**
- * @brief Initialize MQTT task and register callbacks
- *
- * @return ESP_OK on success, error code otherwise
- */
-esp_err_t task_mqtt_init(void);
-
-/**
- * @brief Publish current device state to MQTT
- *
- * @note This function should be called when device state changes to update MQTT broker
- */
-void task_mqtt_publish_current_state(void);
+extern char g_app_version[16];      //!< Application version string
+extern uint32_t g_interval_time_ms; //!< Data publish interval in milliseconds
 
 #endif /* TASK_MANAGER_H */
