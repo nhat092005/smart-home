@@ -1,5 +1,7 @@
 menu "SMART HOME DEVICE CONFIGURATION"
     
+    rsource "../components/application/task_manager/Kconfig"
+
     menu "Communication Layer Configuration"
     
     # WiFi Manager Configuration

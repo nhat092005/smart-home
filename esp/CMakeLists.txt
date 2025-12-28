@@ -5,9 +5,20 @@ cmake_minimum_required(VERSION 3.16)
 # Add nested component directories
 set(EXTRA_COMPONENT_DIRS
     # Application components
+    # Tasks components
     "components/application/task_manager"
+    "components/application/task_init"
+    "components/application/task_button"
+    "components/application/task_status"
+    "components/application/task_wifi"
+    "components/application/task_mqtt"
+    "components/application/task_mode"
+    "components/application/task_display"
+
+    # Other application components
     "components/application/mqtt_callback"
     "components/application/mode_manager"
+    "components/application/shared_sensor"
 
     # Hardware components
     "components/hardware/button_handler"
@@ -26,6 +37,7 @@ set(EXTRA_COMPONENT_DIRS
     "components/sensor/bh1750"
     "components/sensor/ds3231"
     "components/sensor/sht3x"
+    "components/sensor/sh1106"
 
     # Utilities components
     "components/utilities/json_helper"
