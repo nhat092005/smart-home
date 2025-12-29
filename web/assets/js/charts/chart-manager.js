@@ -21,13 +21,13 @@ let chartListener = null;
 export function initializeChart(deviceId, chartType = 'temp') {
     currentDeviceId = deviceId;
     currentChartType = chartType;
-    
+
     // Clear existing listener
     if (chartListener) {
         chartListener();
         chartListener = null;
     }
-    
+
     // Setup Firebase listener for chart data
     setupChartListener(deviceId, chartType);
 }
@@ -42,23 +42,23 @@ function setupChartListener(deviceId, chartType) {
         console.error('[Chart] Firebase not initialized');
         return;
     }
-    
+
     // Fix: History data is at /history/{deviceId}/records
     const historyRef = query(
         ref(db, `history/${deviceId}/records`),
         limitToLast(CHART_CONFIG.MAX_DATA_POINTS)
     );
-    
+
     chartListener = onValue(historyRef, (snapshot) => {
         if (!snapshot.exists()) {
             console.log('[Chart] No history data found for', deviceId);
             updateChart(chartType, [], []);
             return;
         }
-        
+
         const data = snapshot.val();
         const { labels, values } = processChartData(data, chartType);
-        
+
         console.log(`[Chart] Loaded ${values.length} data points for ${chartType}`);
         updateChart(chartType, labels, values);
     }, (error) => {
@@ -75,24 +75,24 @@ function setupChartListener(deviceId, chartType) {
 function processChartData(data, chartType) {
     const labels = [];
     const values = [];
-    
-    const dataField = chartType === 'temp' ? 'temperature' : 
-                      chartType === 'humid' ? 'humidity' : 'light';
-    
+
+    const dataField = chartType === 'temp' ? 'temperature' :
+        chartType === 'humid' ? 'humidity' : 'light';
+
     Object.values(data).forEach(entry => {
         if (entry[dataField] !== undefined) {
             // Format timestamp for label
             const date = new Date(entry.timestamp || Date.now());
-            const timeLabel = date.toLocaleTimeString('vi-VN', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            const timeLabel = date.toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
-            
+
             labels.push(timeLabel);
             values.push(entry[dataField]);
         }
     });
-    
+
     return { labels, values };
 }
 
@@ -108,20 +108,20 @@ function updateChart(chartType, labels, values) {
         console.error('[Chart] Canvas element not found');
         return;
     }
-    
+
     const ctx = canvas.getContext('2d');
     const config = CHART_CONFIG.types[chartType];
-    
+
     if (!config) {
         console.error('[Chart] Unknown chart type:', chartType);
         return;
     }
-    
+
     // Destroy existing chart
     if (myChartInstance) {
         myChartInstance.destroy();
     }
-    
+
     // Create new chart
     myChartInstance = new Chart(ctx, {
         type: 'line',
@@ -162,7 +162,7 @@ function updateChart(chartType, labels, values) {
                 x: {
                     title: {
                         display: true,
-                        text: 'Thời gian'
+                        text: 'Time'
                     }
                 }
             }
@@ -179,12 +179,12 @@ export function switchChartType(newType) {
         console.error('[Chart] No device selected');
         return;
     }
-    
+
     currentChartType = newType;
-    
+
     // Update button active states
     updateChartButtonStates(newType);
-    
+
     // Reinitialize chart with new type
     initializeChart(currentDeviceId, newType);
 }
@@ -199,12 +199,12 @@ function updateChartButtonStates(activeType) {
         humid: document.getElementById('btn-chart-humid'),
         light: document.getElementById('btn-chart-light')
     };
-    
+
     // Remove active class from all
     Object.values(buttons).forEach(btn => {
         if (btn) btn.classList.remove('active-chart');
     });
-    
+
     // Add active class to selected
     if (buttons[activeType]) {
         buttons[activeType].classList.add('active-chart');
@@ -218,13 +218,13 @@ function updateChartButtonStates(activeType) {
  */
 export function updateSensorDisplay(deviceId, data) {
     if (deviceId !== currentDeviceId) return;
-    
+
     const elements = {
         temp: document.getElementById('detail-temp'),
         humid: document.getElementById('detail-humid'),
         light: document.getElementById('detail-light')
     };
-    
+
     if (elements.temp && data.temperature !== undefined) {
         elements.temp.textContent = `${data.temperature} °C`;
     }
@@ -244,12 +244,12 @@ export function cleanupChart() {
         myChartInstance.destroy();
         myChartInstance = null;
     }
-    
+
     if (chartListener) {
         chartListener();
         chartListener = null;
     }
-    
+
     currentDeviceId = null;
     currentChartType = 'temp';
 }
