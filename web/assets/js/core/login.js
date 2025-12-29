@@ -5,10 +5,10 @@
  */
 
 import { auth } from './firebase-config.js';
-import { 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    onAuthStateChanged 
+import {
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // DOM Elements
@@ -33,7 +33,7 @@ function initAuthStateListener() {
     // Check if Firebase auth is available
     if (!auth) {
         console.warn('[Login] Firebase auth not initialized. Please configure Firebase.');
-        showError({ message: 'Firebase chưa được cấu hình. Vui lòng thiết lập Firebase Key.' });
+        showError({ message: 'Firebase not configured. Please set up Firebase Key.' });
         return;
     }
 
@@ -56,19 +56,19 @@ function toggleAuthMode() {
     hideError();
 
     if (isLoginMode) {
-        title.textContent = "Đăng Nhập";
-        submitBtn.textContent = "Đăng Nhập";
+        title.textContent = "Login Account";
+        submitBtn.textContent = "Login";
         confirmPasswordInput.style.display = "none";
         confirmPasswordInput.required = false;
-        toggleMsg.textContent = "Chưa có tài khoản?";
-        toggleBtn.textContent = "Đăng ký ngay";
+        toggleMsg.textContent = "Don't have an account?";
+        toggleBtn.textContent = "Register now";
     } else {
-        title.textContent = "Đăng Ký Tài Khoản";
-        submitBtn.textContent = "Đăng Ký";
+        title.textContent = "Register Account";
+        submitBtn.textContent = "Register";
         confirmPasswordInput.style.display = "block";
         confirmPasswordInput.required = true;
-        toggleMsg.textContent = "Đã có tài khoản?";
-        toggleBtn.textContent = "Đăng nhập ngay";
+        toggleMsg.textContent = "Already have an account?";
+        toggleBtn.textContent = "Login now";
     }
 }
 
@@ -78,26 +78,26 @@ function toggleAuthMode() {
  */
 async function handleAuthSubmit(e) {
     e.preventDefault();
-    
+
     // Check if Firebase auth is available
     if (!auth) {
-        showError({ message: 'Firebase chưa được cấu hình. Vui lòng thiết lập Firebase Key.' });
+        showError({ message: 'Firebase not configured. Please set up Firebase Key.' });
         return;
     }
-    
+
     const email = emailInput.value.trim();
     const password = passwordInput.value;
-    
+
     // Basic validation
     if (!email || !password) {
-        showError({ message: 'Vui lòng nhập đầy đủ email và mật khẩu.' });
+        showError({ message: 'Please enter both email and password.' });
         return;
     }
-    
+
     // Disable submit button during request
     submitBtn.disabled = true;
-    submitBtn.textContent = isLoginMode ? 'Đang đăng nhập...' : 'Đang đăng ký...';
-    
+    submitBtn.textContent = isLoginMode ? 'Logging in...' : 'Registering...';
+
     try {
         if (isLoginMode) {
             // Login
@@ -106,18 +106,18 @@ async function handleAuthSubmit(e) {
         } else {
             // Register - validate password confirmation
             if (password !== confirmPasswordInput.value) {
-                showError({ message: "Mật khẩu xác nhận không khớp." });
+                showError({ message: "Password confirmation does not match." });
                 return;
             }
-            
+
             // Password strength check
             if (password.length < 6) {
-                showError({ message: "Mật khẩu phải có ít nhất 6 ký tự." });
+                showError({ message: "Password must be at least 6 characters long." });
                 return;
             }
-            
+
             await createUserWithEmailAndPassword(auth, email, password);
-            alert("Đăng ký thành công!");
+            alert("Registration successful!");
             // Redirect handled by onAuthStateChanged
         }
     } catch (error) {
@@ -125,7 +125,7 @@ async function handleAuthSubmit(e) {
     } finally {
         // Re-enable submit button
         submitBtn.disabled = false;
-        submitBtn.textContent = isLoginMode ? 'Đăng Nhập' : 'Đăng Ký';
+        submitBtn.textContent = isLoginMode ? 'Login' : 'Register';
     }
 }
 
@@ -136,21 +136,21 @@ async function handleAuthSubmit(e) {
 function showError(error) {
     errorMsg.style.display = 'block';
     console.error('[Login] Error:', error.code || error.message);
-    
+
     // Map Firebase error codes to user-friendly messages
     const errorMessages = {
-        'auth/invalid-email': 'Email không hợp lệ.',
-        'auth/user-disabled': 'Tài khoản đã bị vô hiệu hóa.',
-        'auth/user-not-found': 'Không tìm thấy tài khoản.',
-        'auth/wrong-password': 'Mật khẩu không đúng.',
-        'auth/email-already-in-use': 'Email đã được sử dụng.',
-        'auth/weak-password': 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.',
-        'auth/invalid-credential': 'Email hoặc mật khẩu không đúng.',
-        'auth/too-many-requests': 'Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau.',
-        'auth/network-request-failed': 'Lỗi kết nối mạng. Vui lòng kiểm tra internet.'
+        'auth/invalid-email': 'Invalid email address.',
+        'auth/user-disabled': 'User account has been disabled.',
+        'auth/user-not-found': 'User not found.',
+        'auth/wrong-password': 'Incorrect password.',
+        'auth/email-already-in-use': 'Email is already in use.',
+        'auth/weak-password': 'Password is too weak. Please choose a stronger password.',
+        'auth/invalid-credential': 'Email or password is incorrect.',
+        'auth/too-many-requests': 'Too many failed login attempts. Please try again later.',
+        'auth/network-request-failed': 'Network error. Please check your internet connection.'
     };
-    
-    errorMsg.textContent = errorMessages[error.code] || error.message || 'Đã có lỗi xảy ra.';
+
+    errorMsg.textContent = errorMessages[error.code] || error.message || 'An unknown error occurred. Please try again.';
 }
 
 /**

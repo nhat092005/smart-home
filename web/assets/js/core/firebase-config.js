@@ -13,14 +13,14 @@ const FIREBASE_CONFIG_KEY = 'user_firebase_config';
 
 // Default Firebase configuration (empty - requires user setup)
 const defaultConfig = {
-    apiKey: "AIzaSyBs8FHNVvdwQVoLO1SGHY19AJ5lv601fMM",
-    authDomain: "smarthome-14f3c.firebaseapp.com",
-    databaseURL: "https://smarthome-14f3c-default-rtdb.firebaseio.com",
-    projectId: "smarthome-14f3c",
-    storageBucket: "smarthome-14f3c.firebasestorage.app",
-    messagingSenderId: "416507681974",
-    appId: "1:416507681974:web:30d64fc4e6d40dbfeb5a17",
-    measurementId: "G-WV5KTYDZX9"
+    apiKey: "AIzaSyBs8FHNVvdwQVoLO1SGHY19AJ5lv601fMM",                  //!< Default API key for demo purposes
+    authDomain: "smarthome-14f3c.firebaseapp.com",                      //!< Default auth domain
+    databaseURL: "https://smarthome-14f3c-default-rtdb.firebaseio.com", //!< Default database URL
+    projectId: "smarthome-14f3c",                                       //!< Default project ID
+    storageBucket: "smarthome-14f3c.firebasestorage.app",               //!< Default storage bucket
+    messagingSenderId: "416507681974",                                  //!< Default sender ID
+    appId: "1:416507681974:web:30d64fc4e6d40dbfeb5a17",                 //!< Default app ID
+    measurementId: "G-WV5KTYDZX9"                                       //!< Default measurement ID
 };
 
 /**
