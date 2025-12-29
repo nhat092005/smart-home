@@ -13,13 +13,13 @@
 export function updateStatusBadge(elementId, type, text) {
     const badge = document.getElementById(elementId);
     if (!badge) return;
-    
+
     // Remove old classes
     badge.classList.remove('success', 'warning', 'error');
-    
+
     // Add new class
     badge.classList.add(type);
-    
+
     // Update text
     badge.textContent = text;
 }
@@ -31,7 +31,7 @@ export function updateStatusBadge(elementId, type, text) {
 export function switchTab(tabName) {
     const tabConfig = {
         dashboard: {
-            title: 'Quản lý',
+            title: 'Home',
             views: ['device-grid'],
             hideViews: ['report-view', 'report-list', 'export-view', 'setting-view'],
             viewType: 'manage' // Full controls: add, edit, power toggle
@@ -43,31 +43,31 @@ export function switchTab(tabName) {
             viewType: 'dashboard' // View only: chi tiết button only
         },
         export: {
-            title: 'Dữ liệu',
+            title: 'Data',
             views: ['export-view'],
             hideViews: ['device-grid', 'report-view', 'report-list', 'setting-view'],
             viewType: null
         },
         setting: {
-            title: 'Cấu hình',
+            title: 'Settings',
             views: ['setting-view'],
             hideViews: ['device-grid', 'report-view', 'report-list', 'export-view'],
             viewType: null
         }
     };
-    
+
     const config = tabConfig[tabName];
     if (!config) {
         console.error('[UI] Unknown tab:', tabName);
         return;
     }
-    
+
     // Update title
     const header = document.querySelector('header h1');
     if (header) {
         header.textContent = config.title;
     }
-    
+
     // FIRST: Hide all views that should be hidden
     config.hideViews.forEach(viewId => {
         const view = document.getElementById(viewId);
@@ -75,7 +75,7 @@ export function switchTab(tabName) {
             view.style.display = 'none';
         }
     });
-    
+
     // THEN: Show selected views
     config.views.forEach(viewId => {
         const view = document.getElementById(viewId);
@@ -88,20 +88,20 @@ export function switchTab(tabName) {
             }
         }
     });
-    
+
     // Update menu active state
     document.querySelectorAll('.sidebar .menu a').forEach(link => {
         link.classList.remove('active');
     });
-    
+
     // Find and activate corresponding menu item
     const menuLink = document.querySelector(`.sidebar .menu a[onclick*="${tabName}"]`);
     if (menuLink) {
         menuLink.classList.add('active');
     }
-    
+
     console.log('[UI] Switched to tab:', tabName, 'View type:', config.viewType);
-    
+
     // Return viewType for device manager to use
     return config.viewType;
 }
@@ -158,12 +158,12 @@ export function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.querySelector('.main-content');
     const toggleBtn = document.getElementById('sidebar-toggle');
-    
+
     if (!toggleBtn || !sidebar || !mainContent) {
         console.error('[UI] Sidebar elements not found');
         return;
     }
-    
+
     toggleBtn.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
         mainContent.classList.toggle('expanded');
@@ -177,16 +177,16 @@ export function initializeSidebar() {
 export function updateClock() {
     const dateEl = document.getElementById('current-date');
     const timeEl = document.getElementById('current-time');
-    
+
     if (!dateEl || !timeEl) return;
-    
+
     const now = new Date();
-    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
     const dayName = days[now.getDay()];
     const dateStr = now.toLocaleDateString('vi-VN');
     const timeStr = now.toLocaleTimeString('vi-VN');
-    
+
     dateEl.textContent = `${dayName}, ${dateStr}`;
     timeEl.textContent = timeStr;
 }

@@ -12,7 +12,7 @@ import { updateClock, startClock, stopClock } from '../ui/ui-helpers.js';
 // ESP32 Access Point configuration
 const ESP32_AP_CONFIG = {
     ip: '192.168.4.1',
-    ssid: 'ESP32_SmartHome',
+    ssid: 'SmartHome',
     password: '12345678'
 };
 
@@ -22,7 +22,7 @@ const ESP32_AP_CONFIG = {
 export function initializeSettings() {
     // Start clock display
     startClock();
-    
+
     // Load device info table
     loadDeviceInfoTable();
 }
@@ -32,33 +32,33 @@ export function initializeSettings() {
  */
 export async function loadDeviceInfoTable() {
     const tableBody = document.getElementById('device-info-table');
-    
+
     if (!tableBody || !db) {
         console.error('[Settings] Table element or Firebase not available');
         return;
     }
-    
+
     try {
         const devicesRef = ref(db, 'devices');
         const snapshot = await get(devicesRef);
-        
+
         if (!snapshot.exists()) {
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="7" class="table-empty-state">
                         <i class="fa-solid fa-inbox table-state-icon"></i>
-                        Không có thiết bị nào
+                        No devices found
                     </td>
                 </tr>
             `;
             return;
         }
-        
+
         const devices = snapshot.val();
         const rows = Object.entries(devices).map(([deviceId, data], index) => {
             const name = data.name || 'Unknown';
-            const ip = data.ip || 'Chưa có';
-            
+            const ip = data.ip || 'Not available';
+
             return `
                 <tr>
                     <td class="table-cell-center">${index + 1}</td>
@@ -67,12 +67,12 @@ export async function loadDeviceInfoTable() {
                     <td>${escapeHtml(ip)}</td>
                     <td class="table-cell-center">
                         <button type="button" onclick="showTimeModalForDevice('${escapeHtml(deviceId)}')" class="btn-table btn-table-success">
-                            <i class="fa-solid fa-clock"></i> Sửa
+                            <i class="fa-solid fa-clock"></i> Edit
                         </button>
                     </td>
                     <td class="table-cell-center">
                         <button type="button" onclick="showWiFiGuideForDevice('${escapeHtml(deviceId)}')" class="btn-table btn-table-primary">
-                            <i class="fa-solid fa-wifi"></i> Cấu hình
+                            <i class="fa-solid fa-wifi"></i> Configure
                         </button>
                     </td>
                     <td class="table-cell-center">
@@ -83,16 +83,16 @@ export async function loadDeviceInfoTable() {
                 </tr>
             `;
         }).join('');
-        
+
         tableBody.innerHTML = rows;
-        
+
     } catch (error) {
-    console.error('[Settings] Load device info error:', error);
+        console.error('[Settings] Load device info error:', error);
         tableBody.innerHTML = `
             <tr>
                 <td colspan="7" class="table-error-state">
                     <i class="fa-solid fa-triangle-exclamation table-state-icon"></i>
-                    Lỗi tải dữ liệu thiết bị
+                    Error loading devices: ${escapeHtml(error.message)}
                 </td>
             </tr>
         `;
@@ -104,18 +104,18 @@ export async function loadDeviceInfoTable() {
  * @param {string} deviceId - Device ID to reboot
  */
 export function rebootDevice(deviceId) {
-    const confirmMsg = `⚠️ Bạn có chắc muốn REBOOT thiết bị "${deviceId}"?\n\nThiết bị sẽ khởi động lại và mất kết nối trong vài giây.`;
+    const confirmMsg = `Are you sure you want to REBOOT the device "${deviceId}"?\n\nThe device will restart and lose connection for a few seconds.`;
     if (!confirm(confirmMsg)) return;
-    
+
     if (!isMQTTConnected()) {
-        alert("❌ Chưa kết nối MQTT! Không thể gửi lệnh reboot.");
+        alert("MQTT not connected! Cannot send reboot command.");
         return;
     }
-    
+
     if (sendMQTTCommand(deviceId, 'reboot', {})) {
-        alert(`✅ Đã gửi lệnh REBOOT đến thiết bị "${deviceId}"!\n\nThiết bị sẽ khởi động lại trong vài giây.`);
+        alert(`Reboot command sent to device "${deviceId}"!\n\nThe device will restart in a few seconds.`);
     } else {
-        alert(`❌ Không thể gửi lệnh đến thiết bị "${deviceId}"`);
+        alert(`Cannot send command to device "${deviceId}"`);
     }
 }
 
@@ -124,26 +124,26 @@ export function rebootDevice(deviceId) {
  * @param {string} deviceId - Device ID
  */
 export function showWiFiGuideForDevice(deviceId) {
-    // Hiện confirm dialog trước
-    const confirmMsg = `⚙️ Bạn có chắc muốn CẤU HÌNH WiFi cho thiết bị "${deviceId}"?\n\nThiết bị sẽ được reset về chế độ AP để cấu hình WiFi mới.`;
+    // Show confirm dialog before proceeding
+    const confirmMsg = `Are you sure you want to CONFIGURE WiFi for device "${deviceId}"?\n\nThe device will be reset to AP mode to configure new WiFi.`;
     if (!confirm(confirmMsg)) return;
-    
+
     const modal = document.getElementById('wifi-guide-modal');
     const guideContent = document.getElementById('wifi-guide-content');
-    
+
     if (!modal || !guideContent) {
         console.error('[Settings] WiFi guide modal not found');
         return;
     }
-    
-    // Gửi lệnh factory_reset xuống MQTT broker
+
+    // Send factory_reset command to MQTT broker
     if (isMQTTConnected()) {
         sendMQTTCommand(deviceId, 'factory_reset', {});
         console.log(`[Settings] Sent factory_reset command to ${deviceId}`);
     } else {
         console.warn('[Settings] MQTT not connected, cannot send factory_reset');
     }
-    
+
     guideContent.innerHTML = createWiFiGuideHTML(deviceId);
     modal.style.display = 'block';
 }
@@ -165,21 +165,21 @@ export function closeWiFiGuideModal() {
 export function showTimeModalForDevice(deviceId) {
     // Store current device ID for time sync
     window.currentTimeDeviceId = deviceId;
-    
+
     const modal = document.getElementById('manual-time-modal');
     if (modal) {
         // Set current date/time as default
         const now = new Date();
         const dateInput = document.getElementById('manual-date-input');
         const timeInput = document.getElementById('manual-time-input');
-        
+
         if (dateInput) {
             dateInput.value = now.toISOString().split('T')[0];
         }
         if (timeInput) {
             timeInput.value = now.toTimeString().slice(0, 5);
         }
-        
+
         updateManualTimePreview();
         modal.style.display = 'block';
     }
@@ -192,16 +192,16 @@ export function updateManualTimePreview() {
     const dateInput = document.getElementById('manual-date-input');
     const timeInput = document.getElementById('manual-time-input');
     const preview = document.getElementById('manual-time-preview');
-    
+
     if (!dateInput || !timeInput || !preview) return;
-    
+
     if (dateInput.value && timeInput.value) {
         const selectedDate = new Date(`${dateInput.value}T${timeInput.value}`);
-        const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const dayName = days[selectedDate.getDay()];
         preview.textContent = `${dayName}, ${selectedDate.toLocaleString('vi-VN')}`;
     } else {
-        preview.textContent = 'Chưa chọn';
+        preview.textContent = 'N/A';
     }
 }
 
@@ -211,17 +211,17 @@ export function updateManualTimePreview() {
 export async function applyManualTime() {
     const dateInput = document.getElementById('manual-date-input');
     const timeInput = document.getElementById('manual-time-input');
-    
+
     if (!dateInput?.value || !timeInput?.value) {
-        alert('⚠️ Vui lòng chọn ngày và giờ!');
+        alert('Please select both date and time!');
         return;
     }
-    
+
     const selectedDate = new Date(`${dateInput.value}T${timeInput.value}`);
     const timestamp = Math.floor(selectedDate.getTime() / 1000);
-    
+
     const deviceId = window.currentTimeDeviceId;
-    
+
     if (deviceId) {
         // Sync to specific device
         await syncTimestampToDevice(deviceId, timestamp);
@@ -238,19 +238,19 @@ export async function applyManualTime() {
  */
 export async function syncTimestampToDevice(deviceId, timestamp) {
     if (!isMQTTConnected()) {
-        alert("❌ Chưa kết nối MQTT! Không thể gửi lệnh.");
+        alert("MQTT not connected! Cannot send command.");
         return;
     }
-    
-    // Cộng thêm 7 tiếng (7 * 60 * 60 = 25200 giây) để bù múi giờ phần cứng
+
+    // Add 7 hours (7 * 60 * 60 = 25200 seconds) to compensate for hardware timezone
     const adjustedTimestamp = timestamp + 25200;
-    
+
     if (sendMQTTCommand(deviceId, 'set_timestamp', { timestamp: adjustedTimestamp })) {
         const timeStr = new Date(adjustedTimestamp * 1000).toLocaleString('vi-VN');
-        alert(`✅ Đã gửi thời gian đến thiết bị "${deviceId}"!\n\nThời gian (UTC+7): ${timeStr}`);
+        alert(`Sent time to device "${deviceId}"!\n\nTime (UTC+7): ${timeStr}`);
         closeManualTimeModal();
     } else {
-        alert(`❌ Không thể gửi lệnh đến thiết bị "${deviceId}"`);
+        alert(`Cannot send command to device "${deviceId}"`);
     }
 }
 
@@ -267,42 +267,42 @@ export async function syncTimeToAllDevices() {
  */
 export async function syncTimestampToDevices(timestamp) {
     if (!isMQTTConnected()) {
-        alert("❌ Chưa kết nối MQTT! Không thể gửi lệnh.");
+        alert("MQTT not connected! Cannot send command.");
         return;
     }
-    
+
     if (!db) {
-        alert("❌ Firebase chưa được khởi tạo!");
+        alert("Firebase not initialized!");
         return;
     }
-    
-    // Cộng thêm 7 tiếng (7 * 60 * 60 = 25200 giây) để bù múi giờ phần cứng
+
+    // Add 7 hours (7 * 60 * 60 = 25200 seconds) to compensate for hardware timezone
     const adjustedTimestamp = timestamp + 25200;
-    
+
     try {
         const snapshot = await get(ref(db, 'devices'));
-        
+
         if (!snapshot.exists()) {
-            alert("Không tìm thấy thiết bị nào!");
+            alert("No devices found!");
             return;
         }
-        
+
         const devices = snapshot.val();
         const deviceList = [];
-        
+
         for (const deviceId of Object.keys(devices)) {
             if (sendMQTTCommand(deviceId, 'set_timestamp', { timestamp: adjustedTimestamp })) {
                 deviceList.push(deviceId);
             }
         }
-        
-        const currentTime = new Date(adjustedTimestamp * 1000).toLocaleString('vi-VN');
-        alert(`✅ Đã gửi thời gian đến ${deviceList.length} thiết bị!\n\nThời gian (UTC+7): ${currentTime}`);
+
+        const currentTime = new Date(adjustedTimestamp * 1000).toLocaleString('en-US');
+        alert(`Sent time to ${deviceList.length} devices!\n\nTime (UTC+7): ${currentTime}`);
         closeManualTimeModal();
-        
+
     } catch (error) {
         console.error('[Settings] Time sync error:', error);
-        alert("❌ Lỗi khi gửi lệnh đồng bộ thời gian: " + error.message);
+        alert("Error sending time sync command: " + error.message);
     }
 }
 
@@ -325,24 +325,24 @@ export function closeManualTimeModal() {
 function createWiFiGuideHTML(deviceId = '') {
     const { ip, ssid, password } = ESP32_AP_CONFIG;
     const deviceTitle = deviceId ? ` cho "${deviceId}"` : '';
-    
+
     return `
         <h4 class="wifi-guide-title">
             <i class="fa-solid fa-circle-info"></i> Các bước cấu hình WiFi${deviceTitle}
         </h4>
         
         <div class="wifi-guide-step">
-            <strong>Bước 1: Kết nối vào WiFi của ESP32</strong>
+            <strong>Step 1: Connect to the ESP32 WiFi</strong>
             <ol>
-                <li>Mở danh sách WiFi trên điện thoại/máy tính của bạn</li>
-                <li>Tìm và kết nối vào mạng WiFi: <code class="wifi-guide-code">${ssid}</code></li>
-                <li>Password (nếu có): <code class="wifi-guide-code">${password}</code></li>
+                <li>Open the WiFi list on your phone/computer</li>
+                <li>Find and connect to the WiFi network: <code class="wifi-guide-code">${ssid}</code></li>
+                <li>Password (if any): <code class="wifi-guide-code">${password}</code></li>
             </ol>
         </div>
 
         <div class="wifi-guide-step">
-            <strong>Bước 2: Mở trình duyệt và truy cập</strong>
-            <p>Sau khi kết nối WiFi ESP32, mở trình duyệt và truy cập vào:</p>
+            <strong>Step 2: Open browser and access</strong>
+            <p>After connecting to the ESP32 WiFi, open a browser and go to:</p>
             <div class="wifi-guide-link-wrapper">
                 <a href="http://${ip}" target="_blank" class="wifi-guide-link">
                     <i class="fa-solid fa-external-link-alt"></i> http://${ip}
@@ -351,19 +351,19 @@ function createWiFiGuideHTML(deviceId = '') {
         </div>
 
         <div class="wifi-guide-step">
-            <strong>Bước 3: Nhập thông tin WiFi nhà bạn</strong>
+            <strong>Step 3: Enter your home WiFi information</strong>
             <ol>
-                <li>Chọn tên WiFi nhà bạn từ danh sách</li>
-                <li>Nhập mật khẩu WiFi</li>
-                <li>Click <strong>"Lưu"</strong> hoặc <strong>"Connect"</strong></li>
+                <li>Select your home WiFi name from the list</li>
+                <li>Enter your WiFi password</li>
+                <li>Click <strong>"Save"</strong> or <strong>"Connect"</strong></li>
             </ol>
         </div>
 
         <div class="wifi-guide-success">
             <strong>
-                <i class="fa-solid fa-check-circle"></i> Sau khi cấu hình xong
+                <i class="fa-solid fa-check-circle"></i> After configuration
             </strong>
-            <p>ESP32 sẽ tự động kết nối vào WiFi nhà bạn.</p>
+            <p>ESP32 will automatically connect to your home WiFi.</p>
         </div>
     `;
 }

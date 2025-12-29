@@ -31,9 +31,9 @@ import {
 } from './ui/ui-helpers.js';
 
 // Export module
-import { 
-    fetchAllHistoryData, 
-    renderHistoryTable, 
+import {
+    fetchAllHistoryData,
+    renderHistoryTable,
     exportTableToExcel,
     applyFilters,
     resetFilters,
@@ -122,7 +122,7 @@ function initializeLogoutButton() {
                 window.location.href = 'login.html';
             } catch (error) {
                 console.error('[App] Logout error:', error);
-                alert('Lỗi đăng xuất: ' + error.message);
+                alert('Logout error: ' + error.message);
             }
         });
     }
@@ -133,7 +133,7 @@ function initializeLogoutButton() {
  */
 function initializeFirebase() {
     updateStatusBadge('db-status', 'success', 'Firebase: Connected');
-    // Initialize with 'manage' view by default (Quản lý tab)
+    // Initialize with 'manage' view by default (Manage tab)
     initializeDeviceManager('manage');
 }
 
@@ -213,14 +213,14 @@ async function handleAddDevice(e) {
 
     try {
         await addDevice({ id, name, interval });
-        alert('✅ Đã thêm thiết bị mới!');
+        alert('Added new device!');
         hideModal('add-modal');
         document.getElementById('add-form').reset();
 
         // Subscribe to new device MQTT topics (only once)
         subscribeToDeviceOnce(id);
     } catch (error) {
-        alert('❌ Lỗi: ' + error.message);
+        alert('Error: ' + error.message);
     }
 }
 
@@ -237,19 +237,19 @@ async function handleEditDevice(e) {
     try {
         // Update Firebase
         await updateDevice(deviceId, { name, interval });
-        
+
         // Send MQTT command to update interval on ESP32
         const mqttSuccess = sendMQTTCommand(deviceId, 'set_interval', { interval: interval });
-        
+
         if (mqttSuccess) {
-            alert(`✅ Đã cập nhật thiết bị!\n\n📡 Đã gửi lệnh set_interval (${interval}s) xuống ESP32.`);
+            alert(`Updated device!\n\nSent set_interval command (${interval}s) to ESP32.`);
         } else {
-            alert(`✅ Đã cập nhật thiết bị trên Firebase!\n\n⚠️ Không thể gửi lệnh MQTT (kiểm tra kết nối).`);
+            alert(`Updated device in Firebase!\n\nUnable to send MQTT command (check connection).`);
         }
-        
+
         hideModal('edit-modal');
     } catch (error) {
-        alert('❌ Lỗi: ' + error.message);
+        alert('Error: ' + error.message);
     }
 }
 
@@ -259,16 +259,16 @@ async function handleEditDevice(e) {
 async function handleDeleteDevice() {
     const deviceId = document.getElementById('edit-dev-id').value;
 
-    if (!confirm(`⚠️ Xóa thiết bị "${deviceId}"?\n\nHành động này không thể hoàn tác!`)) {
+    if (!confirm(`Delete device "${deviceId}"?\n\nThis action cannot be undone!`)) {
         return;
     }
 
     try {
         await deleteDevice(deviceId);
-        alert('✅ Đã xóa thiết bị!');
+        alert('Deleted device!');
         hideModal('edit-modal');
     } catch (error) {
-        alert('❌ Lỗi: ' + error.message);
+        alert('Error: ' + error.message);
     }
 }
 
@@ -304,11 +304,11 @@ function exposeGlobalFunctions() {
                 // REMOVED: Button update logic - mqtt-handlers.js will handle it when receiving state response
             } else {
                 console.error('[App] Failed to send MQTT command');
-                alert('⚠️ Không thể gửi lệnh điều khiển. Kiểm tra kết nối MQTT.');
+                alert('Unable to send control command. Check MQTT connection.');
             }
         } catch (error) {
             console.error('[App] Toggle device power error:', error);
-            alert('Lỗi điều khiển thiết bị: ' + error.message);
+            alert('Device control error: ' + error.message);
         }
     };
 
@@ -316,7 +316,7 @@ function exposeGlobalFunctions() {
     window.openEditModal = async (deviceId) => {
         const device = getDeviceData(deviceId);
         if (!device) {
-            alert('Không tìm thấy thiết bị!');
+            alert('Device not found!');
             return;
         }
 
@@ -331,7 +331,7 @@ function exposeGlobalFunctions() {
     window.openReportDetail = async (deviceId) => {
         const device = getDeviceData(deviceId);
         if (!device) {
-            alert('Không tìm thấy thiết bị!');
+            alert('Device not found!');
             return;
         }
 
@@ -340,25 +340,21 @@ function exposeGlobalFunctions() {
 
         // Update modal title
         document.getElementById('report-title').textContent = device.name;
-        
+
         // Update sensor values in stat boxes
         const tempEl = document.getElementById('detail-temp');
         const humidEl = document.getElementById('detail-humid');
         const lightEl = document.getElementById('detail-light');
-        
+
         if (tempEl) tempEl.textContent = `${device.sensors?.temperature || 0} °C`;
         if (humidEl) humidEl.textContent = `${device.sensors?.humidity || 0} %`;
         if (lightEl) lightEl.textContent = `${device.sensors?.light || 0} Lux`;
-        
-        // ============================================
-        // ƯU TIÊN: Lấy state từ MQTT Cache (realtime từ phần cứng)
-        // Fallback 1: Firebase SmartHome/{deviceId}/state
-        // Fallback 2: Device cached states
-        // ============================================
+
+        // Determine initial Quick Control toggle states
         let fanState = false, lightState = false, acState = false;
         let stateSource = 'none';
-        
-        // 1. Ưu tiên cao nhất: MQTT Cached State (nhận trực tiếp từ broker)
+
+        // 1. MQTT Cached State (realtime from broker)
         const mqttState = getMQTTCachedState(deviceId);
         if (mqttState) {
             console.log('[App] Using MQTT cached state (realtime from hardware):', mqttState);
@@ -371,7 +367,7 @@ function exposeGlobalFunctions() {
             try {
                 const stateRef = ref(db, `SmartHome/${deviceId}/state`);
                 const stateSnapshot = await get(stateRef);
-                
+
                 if (stateSnapshot.exists()) {
                     const hardwareState = stateSnapshot.val();
                     console.log('[App] Using Firebase SmartHome state:', hardwareState);
@@ -394,23 +390,23 @@ function exposeGlobalFunctions() {
                 stateSource = 'device-cache-error';
             }
         }
-        
+
         console.log(`[App] Quick Control loaded from: ${stateSource} | fan=${fanState}, light=${lightState}, ac=${acState}`);
-        
+
         // Update toggle switches with hardware state
         const fanToggle = document.getElementById('toggle-fan');
         const lampToggle = document.getElementById('toggle-lamp');
         const acToggle = document.getElementById('toggle-ac');
-        
+
         if (fanToggle) fanToggle.checked = fanState;
         if (lampToggle) lampToggle.checked = lightState;
         if (acToggle) acToggle.checked = acState;
-        
+
         // Reset active states and set temp as default active
         document.getElementById('btn-chart-temp')?.classList.add('active-chart');
         document.getElementById('btn-chart-humid')?.classList.remove('active-chart');
         document.getElementById('btn-chart-light')?.classList.remove('active-chart');
-        
+
         showModal('report-detail');
 
         // Initialize chart with temp as default
@@ -444,7 +440,7 @@ function exposeGlobalFunctions() {
     // Expose function to update toggle UI from MQTT state
     window.updateToggleUI = (deviceId, feature, state) => {
         if (deviceId !== window.currentDetailDeviceId) return;
-        
+
         const toggleId = `toggle-${feature}`;
         const toggleEl = document.getElementById(toggleId);
         if (toggleEl) {
@@ -462,44 +458,44 @@ function exposeGlobalFunctions() {
 
         // Map feature names: lamp → light for MQTT command
         const deviceName = feature === 'lamp' ? 'light' : feature;
-        
+
         // Get current toggle state (what user just clicked)
         const toggleId = `toggle-${feature}`;
         const toggleEl = document.getElementById(toggleId);
         if (!toggleEl) return;
-        
+
         const newState = toggleEl.checked ? 1 : 0;
-        
+
         console.log(`[App] Toggle ${deviceName}: ${newState ? 'ON' : 'OFF'}`);
-        
+
         // Send MQTT command
         const success = sendMQTTCommand(deviceId, 'set_device', {
             device: deviceName,
             state: newState
         });
-        
+
         if (!success) {
-            alert('⚠️ Không thể gửi lệnh. Kiểm tra kết nối MQTT.');
+            alert('Unable to send toggle command. Check MQTT connection.');
             // Revert toggle
             toggleEl.checked = !toggleEl.checked;
             return;
         }
-        
+
         // Start timeout timer (3 seconds)
         const timeoutId = setTimeout(() => {
             // If still in pending map after 3s, device didn't respond
             if (pendingToggles.has(`${deviceId}_${feature}`)) {
                 console.warn(`[App] Device ${deviceId} no response for ${feature}`);
-                alert(`⚠️ Thiết bị không phản hồi cho lệnh ${feature === 'fan' ? 'Quạt' : feature === 'lamp' ? 'Đèn' : 'Máy lạnh'}`);
-                
+                alert(`Device did not respond to ${feature === 'fan' ? 'Fan' : feature === 'lamp' ? 'Light' : 'AC'} command`);
+
                 // Revert toggle to previous state
                 toggleEl.checked = !toggleEl.checked;
-                
+
                 // Remove from pending
                 pendingToggles.delete(`${deviceId}_${feature}`);
             }
         }, 3000);
-        
+
         // Store pending toggle
         pendingToggles.set(`${deviceId}_${feature}`, {
             timeoutId,
@@ -513,30 +509,30 @@ function exposeGlobalFunctions() {
         try {
             await applyFilters();
         } catch (error) {
-            alert('❌ Lỗi lọc dữ liệu: ' + error.message);
+            alert('Error filtering data: ' + error.message);
         }
     };
-    
+
     window.resetFilters = () => {
         resetFilters();
     };
-    
+
     window.setQuickFilter = (filterType) => {
         setQuickFilter(filterType);
     };
-    
+
     window.exportFilteredData = () => {
         exportFilteredData();
     };
-    
+
     // Legacy export functions (kept for compatibility)
     window.fetchAllHistoryData = async () => {
         try {
             const data = await fetchAllHistoryData();
             renderHistoryTable(data);
-            alert(`✅ Đã tải ${data.length} bản ghi`);
+            alert(`Loaded ${data.length} records`);
         } catch (error) {
-            alert('❌ Lỗi tải dữ liệu: ' + error.message);
+            alert('Error loading data: ' + error.message);
         }
     };
 
