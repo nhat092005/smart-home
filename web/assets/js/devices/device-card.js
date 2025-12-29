@@ -32,22 +32,22 @@ function escapeHtml(unsafe) {
 export function renderDeviceGrid(devices, viewType = 'manage') {
     devicesData = devices;
     const grid = document.getElementById('device-grid');
-    
+
     if (!grid) {
         console.error('[DeviceCard] Grid container not found');
         return;
     }
-    
+
     // Clear grid
     grid.innerHTML = '';
-    
+
     // Render device cards first
     Object.entries(devices).forEach(([deviceId, deviceData]) => {
         const card = createDeviceCard(deviceId, deviceData, viewType);
         grid.appendChild(card);
     });
-    
-    // Add "Thêm Thiết Bị" button at the end (right side) for manage view
+
+    // Add "Add Device" button at the end (right side) for manage view
     if (viewType === 'manage') {
         const addButton = document.createElement('div');
         addButton.className = 'card add-card';
@@ -57,7 +57,7 @@ export function renderDeviceGrid(devices, viewType = 'manage') {
         addButton.innerHTML = `
             <div class="dashed-border">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                <span>Thêm Thiết Bị</span>
+                <span>Add Device</span>
             </div>
         `;
         grid.appendChild(addButton);
@@ -75,42 +75,42 @@ function createDeviceCard(deviceId, data, viewType = 'manage') {
     const card = document.createElement('div');
     card.className = 'card';
     card.id = `device-${deviceId}`;
-    
+
     const wifiName = data.wifi || 'N/A';
-    const interval = data.interval || 5; // Mặc định 5s
-    
+    const interval = data.interval || 5; // Default to 5 seconds
+
     // Format interval: 5s, 5m, 1h30m
     const intervalText = formatInterval(interval);
-    
-    // Kiểm tra power state (mặc định là OFF nếu chưa có data)
+
+    // Check power state (default is OFF if no data)
     const isPowerOn = data.states?.power || false;
-    
+
     // Buttons based on view type
     let buttonsHTML = '';
     if (viewType === 'manage') {
-        // Quản lý: Bật/Tắt thiết bị + Sửa
+        // Manage: Power On/Off + Edit
         // OFF = red (btn-danger), ON = green (btn-success)
         const powerBtnClass = isPowerOn ? 'btn-success' : 'btn-danger';
-        const powerBtnText = isPowerOn ? 'Bật' : 'Tắt'; // Xanh = Đang bật -> hiện "Tắt", Đỏ = Đang tắt -> hiện "Bật"
+        const powerBtnText = isPowerOn ? 'ON' : 'OFF'; // Green = ON -> show "OFF", Red = OFF -> show "ON"
         const powerIcon = 'fa-power-off';
-        
+
         buttonsHTML = `
             <button class="btn-sm ${powerBtnClass}" onclick="window.toggleDevicePower('${deviceId}', ${!isPowerOn})">
                 <i class="fa-solid ${powerIcon}"></i> ${powerBtnText}
             </button>
             <button class="btn-sm" onclick="window.openEditModal('${deviceId}')">
-                <i class="fa-solid fa-pen"></i> Sửa
+                <i class="fa-solid fa-pen"></i> Edit
             </button>
         `;
     } else {
-        // Dashboard: Chỉ có nút Chi tiết
+        // Dashboard: Only "Details" button
         buttonsHTML = `
             <button class="btn-sm btn-measure" onclick="window.openReportDetail('${deviceId}')">
-                <i class="fa-solid fa-chart-line"></i> Chi tiết
+                <i class="fa-solid fa-chart-line"></i> Details
             </button>
         `;
     }
-    
+
     card.innerHTML = `
         <div class="card-header">
             <div>
@@ -129,15 +129,15 @@ function createDeviceCard(deviceId, data, viewType = 'manage') {
         
         <div class="metrics">
             <div class="metric-item">
-                <div class="metric-label">Nhiệt độ</div>
+                <div class="metric-label">Temperature</div>
                 <div class="metric-value" id="${deviceId}-temp">${data.sensors?.temperature || 0}°C</div>
             </div>
             <div class="metric-item">
-                <div class="metric-label">Độ ẩm</div>
+                <div class="metric-label">Humidity</div>
                 <div class="metric-value" id="${deviceId}-humid">${data.sensors?.humidity || 0}%</div>
             </div>
             <div class="metric-item">
-                <div class="metric-label">Ánh sáng</div>
+                <div class="metric-label">Light</div>
                 <div class="metric-value" id="${deviceId}-light">${data.sensors?.light || 0} Lux</div>
             </div>
         </div>
@@ -146,7 +146,7 @@ function createDeviceCard(deviceId, data, viewType = 'manage') {
             ${buttonsHTML}
         </div>
     `;
-    
+
     return card;
 }
 
@@ -189,15 +189,15 @@ export function updateDeviceCard(deviceId, updates) {
             devicesData[deviceId].sensors = devicesData[deviceId].sensors || {};
             devicesData[deviceId].sensors.light = updates.light;
         }
-        
+
         devicesData[deviceId].lastUpdate = Date.now();
     }
-    
+
     // Update UI
     const tempEl = document.getElementById(`${deviceId}-temp`);
     const humidEl = document.getElementById(`${deviceId}-humid`);
     const lightEl = document.getElementById(`${deviceId}-light`);
-    
+
     if (tempEl && updates.temperature !== undefined) {
         tempEl.textContent = `${updates.temperature}°C`;
     }
@@ -221,16 +221,16 @@ export function toggleDeviceFeature(deviceId, feature, state) {
         lamp: { command: 'set_lamp', param: 'lamp' },
         ac: { command: 'set_ac', param: 'ac' }
     };
-    
+
     const config = featureConfig[feature];
     if (!config) {
         console.error('[DeviceCard] Unknown feature:', feature);
         return;
     }
-    
+
     const params = {};
     params[config.param] = state;
-    
+
     sendMQTTCommand(deviceId, config.command, params);
 }
 

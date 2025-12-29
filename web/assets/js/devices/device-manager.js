@@ -8,7 +8,7 @@ import { db } from '../core/firebase-config.js';
 import { ref, onValue, set, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { renderDeviceGrid } from './device-card.js';
 
-// REMOVED: subscribeToDevice import - subscription handled in main.js to prevent loops
+// TODO: subscribeToDevice import - subscription handled in main.js to prevent loops 
 
 // Track active Firebase listeners
 let activeListeners = [];
@@ -21,14 +21,14 @@ let cachedDevices = {}; // Cache current devices data
  */
 export function initializeDeviceManager(viewType = 'manage') {
     currentViewType = viewType;
-    
+
     if (!db) {
         console.error('[DeviceManager] Firebase not initialized');
         return;
     }
-    
+
     const devicesRef = ref(db, 'devices');
-    
+
     // Listen for device changes
     const unsubscribe = onValue(devicesRef, (snapshot) => {
         if (snapshot.exists()) {
@@ -36,8 +36,8 @@ export function initializeDeviceManager(viewType = 'manage') {
             cachedDevices = devices; // Cache the devices data
             console.log('[DeviceManager] Devices updated:', Object.keys(devices).length);
             renderDeviceGrid(devices, currentViewType);
-            
-            // REMOVED: Auto-subscribe moved to main.js to prevent infinite loop
+
+            // TODO: Auto-subscribe moved to main.js to prevent infinite loop
         } else {
             console.log('[DeviceManager] No devices found');
             cachedDevices = {};
@@ -46,12 +46,12 @@ export function initializeDeviceManager(viewType = 'manage') {
     }, (error) => {
         console.error('[DeviceManager] Firebase listener error:', error);
     });
-    
+
     activeListeners.push(unsubscribe);
 }
 
 /**
- * Attach listener to "Thêm Thiết Bị" button
+ * Attach listener to "Add Device" button
  * Called after re-rendering grid in manage view
  */
 function attachAddDeviceListener() {
@@ -75,11 +75,11 @@ function attachAddDeviceListener() {
 export function setViewType(viewType) {
     console.log('[DeviceManager] Setting view type:', viewType);
     currentViewType = viewType;
-    
+
     // Re-render grid with cached devices data
     if (cachedDevices && Object.keys(cachedDevices).length > 0) {
         renderDeviceGrid(cachedDevices, currentViewType);
-        
+
         // Re-attach add device button listener if in manage view
         if (viewType === 'manage') {
             setTimeout(() => {
@@ -101,27 +101,27 @@ export async function addDevice(deviceData) {
     if (!db) {
         throw new Error('Firebase not initialized');
     }
-    
+
     const { id, name, interval } = deviceData;
-    
+
     // Validate input
     if (!id || !name) {
         throw new Error('Device ID and name are required');
     }
-    
+
     try {
         const deviceRef = ref(db, `devices/${id}`);
-        
+
         // Check if device already exists
         const snapshot = await get(deviceRef);
         if (snapshot.exists()) {
             throw new Error(`Device ${id} already exists`);
         }
-        
+
         // Create device object
         const device = {
             name: name,
-            interval: parseInt(interval) || 30,
+            interval: parseInt(interval) || 5,
             createdAt: Date.now(),
             lastUpdate: 0,
             sensors: {
@@ -136,10 +136,10 @@ export async function addDevice(deviceData) {
                 ac: false
             }
         };
-        
+
         await set(deviceRef, device);
         console.log('[DeviceManager] Device added:', id);
-        
+
         return device;
     } catch (error) {
         console.error('[DeviceManager] Add device error:', error);
@@ -157,7 +157,7 @@ export async function updateDevice(deviceId, updates) {
     if (!db) {
         throw new Error('Firebase not initialized');
     }
-    
+
     try {
         const deviceRef = ref(db, `devices/${deviceId}`);
         await update(deviceRef, updates);
@@ -177,7 +177,7 @@ export async function deleteDevice(deviceId) {
     if (!db) {
         throw new Error('Firebase not initialized');
     }
-    
+
     try {
         const deviceRef = ref(db, `devices/${deviceId}`);
         await remove(deviceRef);
@@ -196,11 +196,11 @@ export async function getAllDevices() {
     if (!db) {
         throw new Error('Firebase not initialized');
     }
-    
+
     try {
         const devicesRef = ref(db, 'devices');
         const snapshot = await get(devicesRef);
-        
+
         if (snapshot.exists()) {
             return snapshot.val();
         }
@@ -220,11 +220,11 @@ export async function getDevice(deviceId) {
     if (!db) {
         throw new Error('Firebase not initialized');
     }
-    
+
     try {
         const deviceRef = ref(db, `devices/${deviceId}`);
         const snapshot = await get(deviceRef);
-        
+
         if (snapshot.exists()) {
             return snapshot.val();
         }
