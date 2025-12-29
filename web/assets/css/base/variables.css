@@ -1,0 +1,73 @@
+/**
+  * CSS Variables for Smart Home Dashboard
+  * Defines color schemes, spacing, border-radius, shadows, and z-index layers
+  * for consistent styling across the application.
+  */
+
+/* CSS Variables */
+:root {
+  /* Brand Colors */
+  --primary-color: #2563eb;
+  --primary-hover: #1e40af;
+  --success-color: #10b981;
+  --success-hover: #059669;
+  --warning-color: #f59e0b;
+  --warning-hover: #d97706;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --info-color: #3b82f6;
+
+  /* Background Colors */
+  --bg-primary: #f3f4f6;
+  --bg-secondary: #ffffff;
+  --sidebar-bg: #1e293b;
+  --card-bg: #ffffff;
+
+  /* Text Colors */
+  --text-primary: #334155;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Border Colors */
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+  --border-dark: #cbd5e1;
+
+  /* Sensor Colors */
+  --temp-color: #f97316;
+  --humid-color: #3b82f6;
+  --light-color: #eab308;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 20px;
+  --spacing-xl: 30px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 15px;
+  --radius-round: 50%;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.3);
+
+  /* Z-index layers */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 2000;
+  --z-modal: 9999;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.4s ease;
+}
