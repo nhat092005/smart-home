@@ -56,19 +56,19 @@ function toggleAuthMode() {
     hideError();
 
     if (isLoginMode) {
-        title.textContent = "Login Account";
-        submitBtn.textContent = "Login";
+        title.textContent = "Sign In";
+        submitBtn.textContent = "Sign In";
         confirmPasswordInput.style.display = "none";
         confirmPasswordInput.required = false;
         toggleMsg.textContent = "Don't have an account?";
-        toggleBtn.textContent = "Register now";
+        toggleBtn.textContent = "Sign Up Now";
     } else {
-        title.textContent = "Register Account";
-        submitBtn.textContent = "Register";
+        title.textContent = "Sign Up";
+        submitBtn.textContent = "Sign Up";
         confirmPasswordInput.style.display = "block";
         confirmPasswordInput.required = true;
         toggleMsg.textContent = "Already have an account?";
-        toggleBtn.textContent = "Login now";
+        toggleBtn.textContent = "Sign In Now";
     }
 }
 
@@ -96,15 +96,15 @@ async function handleAuthSubmit(e) {
 
     // Disable submit button during request
     submitBtn.disabled = true;
-    submitBtn.textContent = isLoginMode ? 'Logging in...' : 'Registering...';
+    submitBtn.textContent = isLoginMode ? 'Signing in...' : 'Signing up...';
 
     try {
         if (isLoginMode) {
-            // Login
+            // Sign In
             await signInWithEmailAndPassword(auth, email, password);
             // Redirect handled by onAuthStateChanged
         } else {
-            // Register - validate password confirmation
+            // Sign Up - validate password confirmation
             if (password !== confirmPasswordInput.value) {
                 showError({ message: "Password confirmation does not match." });
                 return;
@@ -117,7 +117,7 @@ async function handleAuthSubmit(e) {
             }
 
             await createUserWithEmailAndPassword(auth, email, password);
-            alert("Registration successful!");
+            alert("Sign up successful!");
             // Redirect handled by onAuthStateChanged
         }
     } catch (error) {
@@ -125,7 +125,7 @@ async function handleAuthSubmit(e) {
     } finally {
         // Re-enable submit button
         submitBtn.disabled = false;
-        submitBtn.textContent = isLoginMode ? 'Login' : 'Register';
+        submitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
     }
 }
 
