@@ -584,7 +584,7 @@ function exposeGlobalFunctions() {
                 const errorMsg = error === 'timeout' ? 'Device not responding' : 'Device error';
                 alert(`${errorMsg}: Unable to control ${featureNames[feature]}.`);
             },
-            timeout: 5000
+            timeout: 3000
         });
 
         if (!result) {
