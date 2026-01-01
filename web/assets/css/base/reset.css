@@ -35,6 +35,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Utility: Hidden element */
+.hidden {
+  display: none !important;
+}
+
 /* Noscript warning */
 .noscript-warning {
   padding: 20px;

@@ -6,23 +6,128 @@
 
 import { sendMQTTCommand } from '../mqtt/mqtt-client.js';
 import { updateSensorDisplay } from '../charts/chart-manager.js';
+import { escapeHtml, formatInterval } from '../utils/helpers.js';
 
 // Store device data for updates
 let devicesData = {};
 
+// Store device online status
+const deviceOnlineStatus = {};
+
+// Flag to control if MQTT messages can set online status
+let allowMqttSetOnline = false;
+
 /**
- * Escape HTML to prevent XSS attacks
- * @param {string} unsafe - Unsafe string
- * @returns {string} Escaped string
+ * Enable MQTT to set online status (after initial ping)
  */
-function escapeHtml(unsafe) {
-    if (!unsafe) return '';
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+export function enableMqttOnlineControl() {
+    allowMqttSetOnline = true;
+    console.log('[DeviceCard] MQTT online control enabled');
+}
+
+/**
+ * Disable MQTT online control (during initial ping)
+ */
+export function disableMqttOnlineControl() {
+    allowMqttSetOnline = false;
+    console.log('[DeviceCard] MQTT online control disabled');
+}
+
+/**
+ * Check if MQTT can set online status
+ * @returns {boolean} Allow status
+ */
+export function canMqttSetOnline() {
+    return allowMqttSetOnline;
+}
+
+/**
+ * Initialize all devices as offline
+ * @param {Array} deviceIds - Array of device identifiers
+ */
+export function initializeDevicesOffline(deviceIds) {
+    deviceIds.forEach(deviceId => {
+        deviceOnlineStatus[deviceId] = false;
+        updateDeviceStatusUI(deviceId, false);
+    });
+    console.log(`[DeviceCard] Initialized ${deviceIds.length} devices as offline`);
+}
+
+/**
+ * Get device online status
+ * @param {string} deviceId - Device identifier
+ * @returns {boolean} Online status
+ */
+export function isDeviceOnline(deviceId) {
+    return deviceOnlineStatus[deviceId] || false;
+}
+
+/**
+ * Set device online status
+ * @param {string} deviceId - Device identifier
+ * @param {boolean} isOnline - Online status
+ */
+export function setDeviceOnlineStatus(deviceId, isOnline) {
+    const wasOnline = deviceOnlineStatus[deviceId];
+    deviceOnlineStatus[deviceId] = isOnline;
+    
+    // Update UI if status changed
+    if (wasOnline !== isOnline) {
+        updateDeviceStatusUI(deviceId, isOnline);
+    }
+}
+
+/**
+ * Update device status indicator UI
+ * @param {string} deviceId - Device identifier
+ * @param {boolean} isOnline - Online status
+ */
+function updateDeviceStatusUI(deviceId, isOnline) {
+    const statusEl = document.getElementById(`${deviceId}-status`);
+    if (!statusEl) return;
+    
+    if (isOnline) {
+        statusEl.className = 'device-status online';
+        statusEl.innerHTML = '<span class="status-dot"></span><span class="status-text">Online</span>';
+        
+        // Restore sensor display if we have data
+        if (devicesData[deviceId]?.sensors) {
+            const sensors = devicesData[deviceId].sensors;
+            updateDeviceCard(deviceId, {
+                temperature: sensors.temperature,
+                humidity: sensors.humidity,
+                light: sensors.light
+            });
+        }
+        
+        // Restore WiFi name
+        const wifiEl = document.getElementById(`${deviceId}-wifi`);
+        if (wifiEl && devicesData[deviceId]?.wifi) {
+            wifiEl.innerHTML = `<i class="fa-solid fa-wifi"></i> ${escapeHtml(devicesData[deviceId].wifi)}`;
+        }
+    } else {
+        statusEl.className = 'device-status offline';
+        statusEl.innerHTML = '<span class="status-dot"></span><span class="status-text">Offline</span>';
+        
+        // Show offline values
+        const tempEl = document.getElementById(`${deviceId}-temp`);
+        const humidEl = document.getElementById(`${deviceId}-humid`);
+        const lightEl = document.getElementById(`${deviceId}-light`);
+        const wifiEl = document.getElementById(`${deviceId}-wifi`);
+        
+        if (tempEl) tempEl.textContent = '--°C';
+        if (humidEl) humidEl.textContent = '--%';
+        if (lightEl) lightEl.textContent = '-- Lux';
+        if (wifiEl) wifiEl.innerHTML = '<i class="fa-solid fa-wifi"></i> N/A';
+    }
+}
+
+/**
+ * Get all device online statuses
+ * @returns {Object} All device online statuses
+ */
+export function getAllDeviceOnlineStatus() {
+    return { ...deviceOnlineStatus };
 }
 
 /**
@@ -85,6 +190,17 @@ function createDeviceCard(deviceId, data, viewType = 'manage') {
 
     // Check power state (default is OFF if no data)
     const isPowerOn = data.states?.power || false;
+    
+    // Check online status (default is offline until ping succeeds)
+    const isOnline = deviceOnlineStatus[deviceId] || false;
+    const statusClass = isOnline ? 'online' : 'offline';
+    const statusText = isOnline ? 'Online' : 'Offline';
+    
+    // Display values based on online status
+    const tempDisplay = isOnline ? `${data.sensors?.temperature || 0}°C` : '--°C';
+    const humidDisplay = isOnline ? `${data.sensors?.humidity || 0}%` : '--%';
+    const lightDisplay = isOnline ? `${data.sensors?.light || 0} Lux` : '-- Lux';
+    const wifiDisplay = isOnline ? escapeHtml(wifiName) : 'N/A';
 
     // Buttons based on view type
     let buttonsHTML = '';
@@ -122,8 +238,12 @@ function createDeviceCard(deviceId, data, viewType = 'manage') {
                 </div>
             </div>
             <div class="card-header-right">
+                <div class="device-status ${statusClass}" id="${deviceId}-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">${statusText}</span>
+                </div>
                 <div class="card-wifi-info" id="${deviceId}-wifi">
-                    <i class="fa-solid fa-wifi"></i> ${escapeHtml(wifiName)}
+                    <i class="fa-solid fa-wifi"></i> ${wifiDisplay}
                 </div>
             </div>
         </div>
@@ -131,15 +251,15 @@ function createDeviceCard(deviceId, data, viewType = 'manage') {
         <div class="metrics">
             <div class="metric-item">
                 <div class="metric-label">Temperature</div>
-                <div class="metric-value" id="${deviceId}-temp">${data.sensors?.temperature || 0}°C</div>
+                <div class="metric-value" id="${deviceId}-temp">${tempDisplay}</div>
             </div>
             <div class="metric-item">
                 <div class="metric-label">Humidity</div>
-                <div class="metric-value" id="${deviceId}-humid">${data.sensors?.humidity || 0}%</div>
+                <div class="metric-value" id="${deviceId}-humid">${humidDisplay}</div>
             </div>
             <div class="metric-item">
                 <div class="metric-label">Light</div>
-                <div class="metric-value" id="${deviceId}-light">${data.sensors?.light || 0} Lux</div>
+                <div class="metric-value" id="${deviceId}-light">${lightDisplay}</div>
             </div>
         </div>
         
@@ -149,25 +269,6 @@ function createDeviceCard(deviceId, data, viewType = 'manage') {
     `;
 
     return card;
-}
-
-/**
- * Format interval time to readable string
- * @param {number} seconds - Interval in seconds
- * @returns {string} Formatted interval (e.g., "5s", "5m", "1h30m")
- */
-function formatInterval(seconds) {
-    if (seconds < 60) {
-        return `${seconds}s`;
-    } else if (seconds < 3600) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return remainingSeconds > 0 ? `${minutes}m${remainingSeconds}s` : `${minutes}m`;
-    } else {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        return minutes > 0 ? `${hours}h${minutes}m` : `${hours}h`;
-    }
 }
 
 /**

@@ -380,18 +380,6 @@
   margin-bottom: 10px;
 }
 
-/* Close Button Styles */
-.close-button {
-  cursor: pointer;
-  font-size: 28px;
-  color: #aaa;
-  transition: color 0.2s ease;
-}
-
-.close-button:hover {
-  color: #333;
-}
-
 /* Modal Actions Row */
 .modal-actions-row {
   display: flex;
@@ -402,9 +390,4 @@
 /* Button Flex Fill */
 .btn-flex-fill {
   flex: 1;
-}
-
-/* Button Full Width */
-.btn-full-width {
-  width: 100%;
 }

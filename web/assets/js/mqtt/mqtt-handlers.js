@@ -5,8 +5,9 @@
  */
 
 import { MQTT_TOPICS, handleCommandResponse } from './mqtt-client.js';
-import { updateDeviceCard } from '../devices/device-card.js';
+import { updateDeviceCard, setDeviceOnlineStatus, canMqttSetOnline } from '../devices/device-card.js';
 import { updateStatusBadge } from '../ui/ui-helpers.js';
+import { escapeHtml, formatInterval } from '../utils/helpers.js';
 import {
     syncSensorDataToFirebase,
     syncStateToFirebase,
@@ -85,6 +86,11 @@ export function handleMQTTMessage(message) {
  */
 function handleDataMessage(deviceId, data) {
     console.log(`[MQTT] Data from ${deviceId}:`, data);
+    
+    // Mark device as online when receiving data (only if allowed)
+    if (canMqttSetOnline()) {
+        setDeviceOnlineStatus(deviceId, true);
+    }
 
     // Update device card UI with real data from ESP32
     updateDeviceCard(deviceId, {
@@ -110,6 +116,11 @@ function handleDataMessage(deviceId, data) {
  */
 function handleStateMessage(deviceId, state) {
     console.log(`[MQTT] State from ${deviceId}:`, state);
+    
+    // Mark device as online when receiving state (only if allowed)
+    if (canMqttSetOnline()) {
+        setDeviceOnlineStatus(deviceId, true);
+    }
 
     /* Cache the state */
     mqttStateCache[deviceId] = {
@@ -168,8 +179,13 @@ function handleResponseMessage(deviceId, response) {
  */
 function handleInfoMessage(deviceId, info) {
     console.log(`[MQTT] Info from ${deviceId}:`, info);
+    
+    // Mark device as online when receiving info (only if allowed)
+    if (canMqttSetOnline()) {
+        setDeviceOnlineStatus(deviceId, true);
+    }
 
-    // Cập nhật tên WiFi (ssid)
+    // Update WiFi name (ssid)
     if (info.ssid) {
         updateDeviceWiFiName(deviceId, info.ssid);
     }
@@ -203,21 +219,6 @@ function updateDeviceWiFiName(deviceId, ssid) {
 }
 
 /**
- * Escape HTML to prevent XSS
- * @param {string} unsafe - Unsafe string
- * @returns {string} Escaped string
- */
-function escapeHtml(unsafe) {
-    if (!unsafe) return '';
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-/**
  * Update device power button state
  * @param {string} deviceId - Device identifier
  * @param {boolean} isPowerOn - Power state (true = ON, false = OFF)
@@ -229,7 +230,7 @@ function updateDevicePowerButton(deviceId, isPowerOn) {
     const powerBtn = card.querySelector('button[onclick*="toggleDevicePower"]');
     if (!powerBtn) return;
 
-    // Cập nhật class và text
+    // Update class and text
     if (isPowerOn) {
         powerBtn.classList.remove('btn-danger');
         powerBtn.classList.add('btn-success');
@@ -255,21 +256,7 @@ function updateDeviceInterval(deviceId, interval) {
     const intervalEl = card.querySelector(`#${deviceId}-interval`);
     if (!intervalEl) return;
 
-    // Format interval: 5s, 5m, 1h30m
-    let intervalText;
-    if (interval < 60) {
-        intervalText = `${interval}s`;
-    } else if (interval < 3600) {
-        const minutes = Math.floor(interval / 60);
-        const remainingSeconds = interval % 60;
-        intervalText = remainingSeconds > 0 ? `${minutes}m${remainingSeconds}s` : `${minutes}m`;
-    } else {
-        const hours = Math.floor(interval / 3600);
-        const minutes = Math.floor((interval % 3600) / 60);
-        intervalText = minutes > 0 ? `${hours}h${minutes}m` : `${hours}h`;
-    }
-
-    intervalEl.textContent = intervalText;
+    intervalEl.textContent = formatInterval(interval);
 }
 
 /**

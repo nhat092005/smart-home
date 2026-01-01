@@ -136,6 +136,44 @@
 
 .card-header-right {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Device Status Indicator (Online/Offline) */
+.device-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.device-status .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.device-status.online .status-dot {
+  background-color: var(--success-color, #22c55e);
+  box-shadow: 0 0 6px var(--success-color, #22c55e);
+}
+
+.device-status.online .status-text {
+  color: var(--success-color, #22c55e);
+}
+
+.device-status.offline .status-dot {
+  background-color: var(--danger-color, #ef4444);
+  box-shadow: 0 0 6px var(--danger-color, #ef4444);
+}
+
+.device-status.offline .status-text {
+  color: var(--danger-color, #ef4444);
 }
 
 .card-wifi-info {

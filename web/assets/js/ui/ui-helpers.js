@@ -40,7 +40,7 @@ export function switchTab(tabName) {
             title: 'Dashboard',
             views: ['device-grid'], // Reuse device-grid with dashboard viewType
             hideViews: ['report-view', 'report-list', 'export-view', 'setting-view'],
-            viewType: 'dashboard' // View only: chi tiết button only
+            viewType: 'dashboard' // View only: details button only
         },
         export: {
             title: 'Data',
@@ -148,7 +148,7 @@ export function showNotification(message, type = 'info') {
 export function formatTimestamp(timestamp) {
     if (!timestamp) return 'N/A';
     const date = new Date(timestamp);
-    return date.toLocaleString('vi-VN');
+    return date.toLocaleString('en-US');
 }
 
 /**
@@ -184,8 +184,8 @@ export function updateClock() {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     const dayName = days[now.getDay()];
-    const dateStr = now.toLocaleDateString('vi-VN');
-    const timeStr = now.toLocaleTimeString('vi-VN');
+    const dateStr = now.toLocaleDateString('en-US');
+    const timeStr = now.toLocaleTimeString('en-US');
 
     dateEl.textContent = `${dayName}, ${dateStr}`;
     timeEl.textContent = timeStr;

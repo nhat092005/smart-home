@@ -12,10 +12,11 @@ import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-dat
 // MQTT modules
 import { initializeMQTTClient, subscribeToDevice, sendMQTTCommand } from './mqtt/mqtt-client.js';
 import { handleMQTTMessage, handleMQTTConnect, handleMQTTConnectionLost, getMQTTCachedState } from './mqtt/mqtt-handlers.js';
+import { startPingService, stopPingService, performInitialPing } from './mqtt/ping-service.js';
 
 // Device modules
 import { initializeDeviceManager, addDevice, updateDevice, deleteDevice, getAllDevices, setViewType } from './devices/device-manager.js';
-import { getAllDevicesData, getDeviceData } from './devices/device-card.js';
+import { getAllDevicesData, getDeviceData, isDeviceOnline, initializeDevicesOffline, disableMqttOnlineControl, enableMqttOnlineControl } from './devices/device-card.js';
 
 // Chart modules
 import { initializeChart, switchChartType, cleanupChart } from './charts/chart-manager.js';
@@ -23,7 +24,7 @@ import { initializeChart, switchChartType, cleanupChart } from './charts/chart-m
 // UI modules
 import {
     updateStatusBadge,
-    switchTab,
+    switchTab as switchTabUI,
     showModal,
     hideModal,
     initializeSidebar,
@@ -144,11 +145,41 @@ function initializeMQTT() {
     const onConnect = () => {
         handleMQTTConnect(() => Object.keys(getAllDevicesData()));
 
-        // Subscribe to all existing devices (only once per device)
+        // Get all device IDs
         const devices = getAllDevicesData();
-        Object.keys(devices).forEach(deviceId => {
+        const deviceIds = Object.keys(devices);
+        
+        console.log('[App] MQTT connected, initializing...');
+        
+        // Step 1: Initialize all devices as offline first
+        initializeDevicesOffline(deviceIds);
+        
+        // Step 2: Disable MQTT from setting online status (block retained messages)
+        disableMqttOnlineControl();
+        
+        // Step 3: Subscribe to all devices FIRST (required before sending commands)
+        console.log('[App] Subscribing to device topics...');
+        deviceIds.forEach(deviceId => {
             subscribeToDeviceOnce(deviceId);
         });
+        
+        // Step 4: Wait a moment for subscriptions to complete, then ping
+        setTimeout(() => {
+            console.log('[App] Performing initial ping check...');
+            
+            // Perform initial ping to check device status
+            performInitialPing(() => {
+                console.log('[App] Initial ping completed, enabling MQTT online control...');
+                
+                // Step 5: After initial ping, allow MQTT to control online status
+                enableMqttOnlineControl();
+                
+                // Step 6: Start periodic ping service
+                startPingService();
+                
+                console.log('[App] MQTT initialization complete');
+            });
+        }, 500); // Small delay to ensure subscriptions are ready
     };
 
     initializeMQTTClient(onConnect, handleMQTTMessage, handleMQTTConnectionLost);
@@ -300,7 +331,7 @@ async function handleDeleteDevice() {
 function exposeGlobalFunctions() {
     // Tab switching - wrap to update device view type
     window.switchTab = (tabName) => {
-        const viewType = switchTab(tabName);
+        const viewType = switchTabUI(tabName);
         // Update device manager view type when switching to tabs with device grid
         if (viewType) {
             setViewType(viewType);
@@ -317,10 +348,16 @@ function exposeGlobalFunctions() {
 
     // Device power control
     window.toggleDevicePower = async (deviceId, newPowerState) => {
+        // Check if device is online first
+        if (!isDeviceOnline(deviceId)) {
+            alert(`Device "${deviceId}" is Offline.\n\nUnable to send control command.`);
+            return;
+        }
+
         // Get button element to update UI
         const card = document.getElementById(`device-${deviceId}`);
         const powerBtn = card?.querySelector('button[onclick*="toggleDevicePower"]');
-        
+
         if (powerBtn) {
             // Disable button and show loading
             powerBtn.disabled = true;
@@ -441,7 +478,7 @@ function exposeGlobalFunctions() {
             acState = mqttState.ac === 1;
             stateSource = 'mqtt-cache';
         } else {
-            // 2. Fallback: Lấy từ Firebase
+            // 2. Fallback: Get from Firebase
             try {
                 const stateRef = ref(db, `SmartHome/${deviceId}/state`);
                 const stateSnapshot = await get(stateRef);

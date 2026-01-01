@@ -83,7 +83,7 @@ function processChartData(data, chartType) {
         if (entry[dataField] !== undefined) {
             // Format timestamp for label
             const date = new Date(entry.timestamp || Date.now());
-            const timeLabel = date.toLocaleTimeString('vi-VN', {
+            const timeLabel = date.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
@@ -122,6 +122,28 @@ function updateChart(chartType, labels, values) {
         myChartInstance.destroy();
     }
 
+    // Calculate dynamic Y-axis range for better visualization
+    let minY = null;
+    let maxY = null;
+    if (values.length > 0) {
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const range = max - min;
+        const padding = range * 0.2; // 20% padding
+        
+        minY = Math.max(0, min - padding); // Don't go below 0
+        maxY = max + padding;
+        
+        // Round to nice numbers
+        minY = Math.floor(minY);
+        maxY = Math.ceil(maxY);
+    }
+
+    // Create gradient for fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, config.color.replace('rgb', 'rgba').replace(')', ', 0.5)'));
+    gradient.addColorStop(1, config.color.replace('rgb', 'rgba').replace(')', ', 0.05)'));
+
     // Create new chart
     myChartInstance = new Chart(ctx, {
         type: 'line',
@@ -131,38 +153,114 @@ function updateChart(chartType, labels, values) {
                 label: config.label,
                 data: values,
                 borderColor: config.color,
-                backgroundColor: config.bgColor,
-                borderWidth: 2,
+                backgroundColor: gradient,
+                borderWidth: 3,
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: config.color,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: config.color,
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             animation: CHART_CONFIG.animation,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             plugins: {
                 legend: {
                     display: true,
-                    position: 'top'
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 13
+                        }
+                    }
                 },
                 title: {
                     display: true,
-                    text: config.title
+                    text: config.title,
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return `${config.label}: ${context.parsed.y.toFixed(2)} ${config.unit}`;
+                        }
+                    }
                 }
             },
             scales: {
                 y: {
-                    beginAtZero: true,
+                    beginAtZero: false,
+                    min: minY,
+                    max: maxY,
                     title: {
                         display: true,
-                        text: config.unit
+                        text: config.unit,
+                        font: {
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(1);
+                        },
+                        font: {
+                            size: 12
+                        }
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: 'Time'
+                        text: 'Time',
+                        font: {
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45,
+                        font: {
+                            size: 11
+                        }
                     }
                 }
             }

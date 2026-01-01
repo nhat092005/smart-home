@@ -8,6 +8,8 @@ import { db } from '../core/firebase-config.js';
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { sendMQTTCommand, isMQTTConnected } from '../mqtt/mqtt-client.js';
 import { updateClock, startClock, stopClock } from '../ui/ui-helpers.js';
+import { isDeviceOnline } from '../devices/device-card.js';
+import { escapeHtml } from '../utils/helpers.js';
 
 // ESP32 Access Point configuration
 const ESP32_AP_CONFIG = {
@@ -57,14 +59,15 @@ export async function loadDeviceInfoTable() {
         const devices = snapshot.val();
         const rows = Object.entries(devices).map(([deviceId, data], index) => {
             const name = data.name || 'Unknown';
-            const ip = data.ip || 'Not available';
+            const online = isDeviceOnline(deviceId);
+            const ip = online ? (data.ip || 'Not available') : 'Not connected';
 
             return `
-                <tr>
+                <tr data-device-id="${escapeHtml(deviceId)}">
                     <td class="table-cell-center">${index + 1}</td>
                     <td>${escapeHtml(name)}</td>
                     <td>${escapeHtml(deviceId)}</td>
-                    <td>${escapeHtml(ip)}</td>
+                    <td class="device-ip-cell ${online ? '' : 'offline-ip'}">${escapeHtml(ip)}</td>
                     <td class="table-cell-center">
                         <button type="button" onclick="showTimeModalForDevice('${escapeHtml(deviceId)}')" class="btn-table btn-table-success">
                             <i class="fa-solid fa-clock"></i> Edit
@@ -104,6 +107,12 @@ export async function loadDeviceInfoTable() {
  * @param {string} deviceId - Device ID to reboot
  */
 export function rebootDevice(deviceId) {
+    // Check if device is online
+    if (!isDeviceOnline(deviceId)) {
+        alert(`Device "${deviceId}" is Offline.\n\nUnable to send reboot command.`);
+        return;
+    }
+    
     const confirmMsg = `Are you sure you want to REBOOT the device "${deviceId}"?\n\nThe device will restart and lose connection for a few seconds.`;
     if (!confirm(confirmMsg)) return;
 
@@ -144,6 +153,12 @@ export function rebootDevice(deviceId) {
  * @param {string} deviceId - Device ID
  */
 export function showWiFiGuideForDevice(deviceId) {
+    // Check if device is online
+    if (!isDeviceOnline(deviceId)) {
+        alert(`Device "${deviceId}" is Offline.\n\nUnable to configure WiFi.`);
+        return;
+    }
+    
     // Show confirm dialog before proceeding
     const confirmMsg = `Are you sure you want to CONFIGURE WiFi for device "${deviceId}"?\n\nThe device will be reset to AP mode to configure new WiFi.`;
     if (!confirm(confirmMsg)) return;
@@ -204,6 +219,12 @@ export function closeWiFiGuideModal() {
  * @param {string} deviceId - Device ID
  */
 export function showTimeModalForDevice(deviceId) {
+    // Check if device is online
+    if (!isDeviceOnline(deviceId)) {
+        alert(`Device "${deviceId}" is Offline.\n\nUnable to synchronize time.`);
+        return;
+    }
+    
     // Store current device ID for time sync
     window.currentTimeDeviceId = deviceId;
 
@@ -240,7 +261,7 @@ export function updateManualTimePreview() {
         const selectedDate = new Date(`${dateInput.value}T${timeInput.value}`);
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const dayName = days[selectedDate.getDay()];
-        preview.textContent = `${dayName}, ${selectedDate.toLocaleString('vi-VN')}`;
+        preview.textContent = `${dayName}, ${selectedDate.toLocaleString('en-US')}`;
     } else {
         preview.textContent = 'N/A';
     }
@@ -299,7 +320,7 @@ export async function syncTimestampToDevice(deviceId, timestamp) {
                 applyBtn.disabled = false;
                 applyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Apply';
             }
-            const timeStr = new Date(adjustedTimestamp * 1000).toLocaleString('vi-VN');
+            const timeStr = new Date(adjustedTimestamp * 1000).toLocaleString('en-US');
             alert(`Time synced to device "${deviceId}"!\n\nTime (UTC+7): ${timeStr}`);
             closeManualTimeModal();
         },
@@ -463,20 +484,6 @@ function createWiFiGuideHTML(deviceId = '') {
     `;
 }
 
-/**
- * Escape HTML to prevent XSS
- * @param {string} unsafe - Unsafe string
- * @returns {string} Escaped string
- */
-function escapeHtml(unsafe) {
-    if (!unsafe) return '';
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
 
 /**
  * Cleanup settings resources

@@ -16,7 +16,8 @@ js/
 ├── mqtt/                  # MQTT communication
 │   ├── mqtt-client.js     # MQTT client management
 │   ├── mqtt-handlers.js   # Message handling and state caching
-│   └── mqtt-to-firebase.js # MQTT to Firebase data sync
+│   ├── mqtt-to-firebase.js # MQTT to Firebase data sync
+│   └── ping-service.js    # Device online/offline ping service
 ├── devices/               # Device management
 │   ├── device-manager.js  # Device CRUD operations
 │   └── device-card.js     # Device UI rendering
@@ -27,6 +28,8 @@ js/
 │   └── data-export.js     # Historical data export to Excel
 ├── settings/              # Settings management
 │   └── settings-manager.js # System settings and configuration
+├── utils/                 # Utility functions
+│   └── helpers.js         # Common utilities (escapeHtml, formatInterval)
 └── ui/                    # UI utilities
     └── ui-helpers.js      # UI helper functions
 ```

@@ -6,6 +6,7 @@
 
 import { db } from '../core/firebase-config.js';
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { escapeHtml } from '../utils/helpers.js';
 
 /**
  * Fetch all historical data from Firebase
@@ -95,7 +96,7 @@ export function renderHistoryTable(data) {
 
     const rows = data.map((entry, index) => {
         const date = new Date(entry.timestamp);
-        const dateStr = date.toLocaleString('vi-VN');
+        const dateStr = date.toLocaleString('en-US');
 
         return `
             <tr>
@@ -161,21 +162,6 @@ export function exportTableToExcel() {
     document.body.removeChild(link);
 
     console.log('[Export] Data exported to CSV');
-}
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} unsafe - Unsafe string
- * @returns {string} Escaped string
- */
-function escapeHtml(unsafe) {
-    if (!unsafe) return '';
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
 }
 
 // Store all data and filtered data
@@ -318,7 +304,7 @@ export function exportFilteredData() {
     // Add data rows
     filteredData.forEach((entry, index) => {
         const date = new Date(entry.timestamp);
-        const dateStr = date.toLocaleString('vi-VN');
+        const dateStr = date.toLocaleString('en-US');
 
         const row = [
             index + 1,

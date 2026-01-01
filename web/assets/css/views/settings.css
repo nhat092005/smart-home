@@ -41,3 +41,9 @@
 .device-table-container {
   overflow-x: auto;
 }
+
+/* Offline IP Cell */
+.device-ip-cell.offline-ip {
+  color: var(--danger-color, #ef4444);
+  font-weight: 600;
+}
