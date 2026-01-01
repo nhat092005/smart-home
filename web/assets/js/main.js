@@ -94,16 +94,15 @@ function initializeApp() {
     initializeSidebar();
     initializeModalHandlers();
 
-    // Initialize Firebase sync
+    // Initialize Firebase sync FIRST, then MQTT
     if (db) {
         initializeFirebase();
     } else {
         console.warn('[App] Firebase not initialized. Please configure Firebase settings.');
         updateStatusBadge('db-status', 'error', 'Firebase: Not Configured');
+        // Still initialize MQTT even without Firebase
+        initializeMQTT();
     }
-
-    // Initialize MQTT
-    initializeMQTT();
 
     // Make functions globally available for HTML onclick handlers
     exposeGlobalFunctions();
@@ -134,8 +133,13 @@ function initializeLogoutButton() {
  */
 function initializeFirebase() {
     updateStatusBadge('db-status', 'success', 'Firebase: Connected');
+
     // Initialize with 'manage' view by default (Manage tab)
-    initializeDeviceManager('manage');
+    // Wait for initial device load before initializing MQTT
+    initializeDeviceManager('manage', () => {
+        console.log('[App] Devices loaded, initializing MQTT...');
+        initializeMQTT();
+    });
 }
 
 /**
@@ -148,35 +152,35 @@ function initializeMQTT() {
         // Get all device IDs
         const devices = getAllDevicesData();
         const deviceIds = Object.keys(devices);
-        
+
         console.log('[App] MQTT connected, initializing...');
-        
+
         // Step 1: Initialize all devices as offline first
         initializeDevicesOffline(deviceIds);
-        
+
         // Step 2: Disable MQTT from setting online status (block retained messages)
         disableMqttOnlineControl();
-        
+
         // Step 3: Subscribe to all devices FIRST (required before sending commands)
         console.log('[App] Subscribing to device topics...');
         deviceIds.forEach(deviceId => {
             subscribeToDeviceOnce(deviceId);
         });
-        
+
         // Step 4: Wait a moment for subscriptions to complete, then ping
         setTimeout(() => {
             console.log('[App] Performing initial ping check...');
-            
+
             // Perform initial ping to check device status
             performInitialPing(() => {
                 console.log('[App] Initial ping completed, enabling MQTT online control...');
-                
+
                 // Step 5: After initial ping, allow MQTT to control online status
                 enableMqttOnlineControl();
-                
+
                 // Step 6: Start periodic ping service
                 startPingService();
-                
+
                 console.log('[App] MQTT initialization complete');
             });
         }, 500); // Small delay to ensure subscriptions are ready
@@ -269,7 +273,7 @@ async function handleEditDevice(e) {
     const saveBtn = document.querySelector('#edit-form button[type="submit"]');
     if (saveBtn) {
         saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving';
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
     }
 
     try {

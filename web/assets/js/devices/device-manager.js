@@ -18,16 +18,20 @@ let cachedDevices = {}; // Cache current devices data
 /**
  * Initialize device manager and listen for device changes
  * @param {string} viewType - View type: 'manage' or 'dashboard'
+ * @param {Function} onInitialLoad - Callback when initial devices are loaded
  */
-export function initializeDeviceManager(viewType = 'manage') {
+export function initializeDeviceManager(viewType = 'manage', onInitialLoad = null) {
     currentViewType = viewType;
 
     if (!db) {
         console.error('[DeviceManager] Firebase not initialized');
+        if (onInitialLoad) onInitialLoad();
         return;
     }
 
     const devicesRef = ref(db, 'devices');
+
+    let isFirstLoad = true;
 
     // Listen for device changes
     const unsubscribe = onValue(devicesRef, (snapshot) => {
@@ -43,8 +47,19 @@ export function initializeDeviceManager(viewType = 'manage') {
             cachedDevices = {};
             renderDeviceGrid({}, currentViewType);
         }
+
+        // Call onInitialLoad callback only on first load
+        if (isFirstLoad && onInitialLoad) {
+            isFirstLoad = false;
+            console.log('[DeviceManager] Initial load complete');
+            onInitialLoad();
+        }
     }, (error) => {
         console.error('[DeviceManager] Firebase listener error:', error);
+        if (isFirstLoad && onInitialLoad) {
+            isFirstLoad = false;
+            onInitialLoad();
+        }
     });
 
     activeListeners.push(unsubscribe);
