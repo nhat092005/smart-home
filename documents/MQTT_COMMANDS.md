@@ -292,11 +292,11 @@ mosquitto_pub -h 6ceea111b6144c71a57b21faa3553fc6.s1.eu.hivemq.cloud \
 
 ```json
 {
-    "id": "unique_id",
-    "command": "set_timestamp",
-    "params": {
-        "timestamp": 1734958200
-    }
+  "id": "unique_id",
+  "command": "set_timestamp",
+  "params": {
+    "timestamp": 1734958200
+  }
 }
 ```
 
@@ -309,6 +309,32 @@ mosquitto_pub -h 6ceea111b6144c71a57b21faa3553fc6.s1.eu.hivemq.cloud \
   "params": {
     "timestamp": 1734958200
   }
+}
+```
+
+---
+
+### 9. ping - Ping for check MQTT
+
+**Description:** Checks whether the device is online and responsive via MQTT. The device replies immediately with a pong response.
+
+**JSON Format:**
+
+```json
+{
+  "id": "unique_id",
+  "command": "ping",
+  "params": {}
+}
+```
+
+**Example:**
+
+```json
+{
+  "id": "cmd_008",
+  "command": "ping",
+  "params": {}
 }
 ```
 
@@ -363,13 +389,13 @@ mosquitto_pub -h 6ceea111b6144c71a57b21faa3553fc6.s1.eu.hivemq.cloud \
 
 ## General Rules
 
-| Component   | Details                                              |
-| ----------- | ---------------------------------------------------- |
+| Component   | Details                                                  |
+| ----------- | -------------------------------------------------------- |
 | **id**      | Unique command ID (string, arbitrary). Used for tracking |
-| **command** | Command name must be exact (case-sensitive)          |
-| **params**  | Object containing parameters (can be empty `{}`)     |
-| **Topic**   | Always `SmartHome/esp_01/command`                    |
-| **QoS**     | Automatically 1 (at-least-once delivery)             |
+| **command** | Command name must be exact (case-sensitive)              |
+| **params**  | Object containing parameters (can be empty `{}`)         |
+| **Topic**   | Always `SmartHome/esp_01/command`                        |
+| **QoS**     | Automatically 1 (at-least-once delivery)                 |
 
 ---
 
