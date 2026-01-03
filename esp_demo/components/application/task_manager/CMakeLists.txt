@@ -1,0 +1,17 @@
+idf_component_register(
+    SRCS
+    "task_manager.c"
+    INCLUDE_DIRS 
+    "include"
+    REQUIRES
+    task_init
+    task_button
+    task_status
+    task_wifi
+    task_mqtt
+    task_mode
+    task_display
+    mode_manager
+    wifi_manager
+    mqtt_manager
+)

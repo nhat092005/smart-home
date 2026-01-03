@@ -1,0 +1,13 @@
+idf_component_register(
+    SRCS
+    "task_mode.c"
+    INCLUDE_DIRS 
+    "include"
+    REQUIRES
+    task_manager
+    task_display
+    sensor_manager
+    sensor_reader
+    mode_manager
+    shared_sensor
+)

@@ -1,0 +1,37 @@
+menu "WiFi Manager Configuration"
+
+    config WIFI_AP_SSID
+        string "SoftAP SSID for provisioning"
+        default "SmartHome_Setup"
+        help
+            SSID for the SoftAP mode during WiFi provisioning
+
+    config WIFI_MAX_RETRY
+        int "Maximum WiFi reconnection attempts"
+        range 1 10
+        default 5
+        help
+            Number of reconnection attempts before giving up
+
+    config SCAN_MAX_AP
+        int "Maximum number of APs to scan"
+        range 5 50
+        default 10
+        help
+            Maximum number of Access Points to return during WiFi scan
+
+    config HTTP_SERVER_PORT
+        int "HTTP Server Port"
+        range 1 65535
+        default 80
+        help
+            Port number for the HTTP server used in WiFi provisioning
+
+    config DNS_SERVER_PORT
+        int "DNS Server Port"
+        range 1 65535
+        default 53
+        help
+            Port number for the DNS server used in captive portal
+
+endmenu

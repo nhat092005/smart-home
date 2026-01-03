@@ -1,0 +1,50 @@
+menu "Button Handler Configuration"
+
+    config BUTTON_MODE
+        int "BUTTON MODE GPIO"
+        range 0 48
+        default 32
+        help
+            Set the GPIO number for the mode button.
+
+    config BUTTON_WIFI
+        int "BUTTON WIFI GPIO"
+        range 0 48
+        default 33
+        help
+            Set the GPIO number for the interval button.
+
+    config BUTTON_LIGHT
+        int "BUTTON LIGHT GPIO"
+        range 0 48
+        default 25
+        help
+            Set the GPIO number for the light button.
+
+    config BUTTON_FAN
+        int "BUTTON FAN GPIO"
+        range 0 48
+        default 26
+        help
+            Set the GPIO number for the fan button.
+
+    config BUTTON_AC
+        int "BUTTON AC GPIO"
+        range 0 48
+        default 23
+        help
+            Set the GPIO number for the AC button.
+
+    config BUTTON_POLL_INTERVAL_MS
+        int "BUTTON POLL INTERVAL (ms)"
+        range 1 1000
+        default 10
+    
+    config DEBOUNCE_TIME_MS
+        int "DEBOUNCE TIME (ms)"
+        range 0 1000
+        default 50
+        help
+            Set the debounce time for button presses in milliseconds.
+
+endmenu

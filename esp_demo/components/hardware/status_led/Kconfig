@@ -1,0 +1,32 @@
+menu "Status LED Configuration"
+
+    config LED_ACTIVE_LEVEL
+        int "LED Active Level"
+        range 0 1
+        default 1
+        help
+            0 = Active LOW (LED ON when GPIO is LOW)
+            1 = Active HIGH (LED ON when GPIO is HIGH)    
+
+    config LED_GPIO_DEVICE
+        int "LED DEVICE GPIO"
+        range 0 48
+        default 27
+        help
+            GPIO number for device status LED
+
+    config LED_GPIO_WIFI
+        int "LED WIFI GPIO"
+        range 0 48
+        default 14
+        help
+            GPIO number for WiFi status LED
+
+    config LED_GPIO_MQTT
+        int "LED MQTT GPIO"
+        range 0 48
+        default 13
+        help
+            GPIO number for MQTT status LED
+
+endmenu
