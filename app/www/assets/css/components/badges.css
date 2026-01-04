@@ -32,3 +32,55 @@
   display: flex;
   gap: 10px;
 }
+
+/* Device Online/Offline Status */
+.device-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 2px 0;
+  transition: all 0.3s ease;
+}
+
+.device-status .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.device-status.online {
+  color: #166534;
+}
+
+.device-status.online .status-dot {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.device-status.offline {
+  color: #991b1b;
+}
+
+.device-status.offline .status-dot {
+  background: #ef4444;
+  animation: none;
+}
+
+.device-status .status-text {
+  line-height: 1;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
