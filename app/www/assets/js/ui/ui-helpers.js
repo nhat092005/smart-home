@@ -25,7 +25,7 @@ export function updateStatusBadge(elementId, type, text) {
 }
 
 /**
- * Switch between tabs (dashboard, report, settings)
+ * Switch between tabs (dashboard, report, notification, settings)
  * @param {string} tabName - Tab name to switch to
  */
 export function switchTab(tabName) {
@@ -33,19 +33,25 @@ export function switchTab(tabName) {
         dashboard: {
             title: 'Home',
             views: ['device-grid'],
-            hideViews: ['setting-view'],
+            hideViews: ['setting-view', 'notification-view'],
             viewType: 'manage' // Full controls: add, edit, power toggle
         },
         report: {
             title: 'Dashboard',
             views: ['device-grid'], // Reuse device-grid with dashboard viewType
-            hideViews: ['setting-view'],
+            hideViews: ['setting-view', 'notification-view'],
             viewType: 'dashboard' // View only: chi tiết button only
+        },
+        notification: {
+            title: 'Notifications',
+            views: ['notification-view'],
+            hideViews: ['device-grid', 'setting-view'],
+            viewType: null
         },
         setting: {
             title: 'Settings',
             views: ['setting-view'],
-            hideViews: ['device-grid'],
+            hideViews: ['device-grid', 'notification-view'],
             viewType: null
         }
     };

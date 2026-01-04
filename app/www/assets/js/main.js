@@ -12,10 +12,19 @@ import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-dat
 // MQTT modules
 import { initializeMQTTClient, subscribeToDevice, sendMQTTCommand } from './mqtt/mqtt-client.js';
 import { handleMQTTMessage, handleMQTTConnect, handleMQTTConnectionLost, getMQTTCachedState } from './mqtt/mqtt-handlers.js';
+import { performInitialPing, startPingService, stopPingService } from './mqtt/ping-service.js';
 
 // Device modules
 import { initializeDeviceManager, addDevice, updateDevice, deleteDevice, getAllDevices, setViewType } from './devices/device-manager.js';
-import { getAllDevicesData, getDeviceData } from './devices/device-card.js';
+import { 
+    getAllDevicesData, 
+    getDeviceData, 
+    initializeDevicesOffline, 
+    enableMqttOnlineControl, 
+    disableMqttOnlineControl,
+    isDeviceOnline,
+    setOnStatusChangeCallback 
+} from './devices/device-card.js';
 
 // Chart modules
 import { initializeChart, switchChartType, cleanupChart } from './charts/chart-manager.js';
@@ -44,6 +53,18 @@ import {
     closeManualTimeModal,
     updateManualTimePreview
 } from './settings/settings-manager.js';
+
+// Notification module
+import {
+    initializeNotificationService,
+    renderNotificationList,
+    clearAllNotifications,
+    deleteNotification,
+    notifyDeviceOnline,
+    notifyDeviceOffline,
+    addNotification,
+    NOTIFICATION_TYPES
+} from './notifications/notification-service.js';
 
 // ============================================================
 // MQTT SUBSCRIPTION TRACKING
@@ -81,17 +102,28 @@ function initializeApp() {
     initializeLogoutButton();
     initializeSidebar();
     initializeModalHandlers();
+    
+    // Initialize notification service
+    initializeNotificationService();
+    
+    // Set up device status change notifications
+    setOnStatusChangeCallback((deviceId, isOnline, deviceName) => {
+        if (isOnline) {
+            notifyDeviceOnline(deviceId, deviceName);
+        } else {
+            notifyDeviceOffline(deviceId, deviceName);
+        }
+    });
 
-    // Initialize Firebase sync
+    // Initialize Firebase sync FIRST, then MQTT (sequential, not parallel)
     if (db) {
         initializeFirebase();
     } else {
         console.warn('[App] Firebase not initialized. Please configure Firebase settings.');
         updateStatusBadge('db-status', 'error', 'Firebase: Not Configured');
+        // Still initialize MQTT even without Firebase
+        initializeMQTT();
     }
-
-    // Initialize MQTT
-    initializeMQTT();
 
     // Make functions globally available for HTML onclick handlers
     exposeGlobalFunctions();
@@ -122,8 +154,13 @@ function initializeLogoutButton() {
  */
 function initializeFirebase() {
     updateStatusBadge('db-status', 'success', 'Firebase: Connected');
+
     // Initialize with 'manage' view by default (Manage tab)
-    initializeDeviceManager('manage');
+    // Wait for initial device load before initializing MQTT
+    initializeDeviceManager('manage', () => {
+        console.log('[App] Devices loaded, initializing MQTT...');
+        initializeMQTT();
+    });
 }
 
 /**
@@ -133,14 +170,48 @@ function initializeMQTT() {
     const onConnect = () => {
         handleMQTTConnect(() => Object.keys(getAllDevicesData()));
 
-        // Subscribe to all existing devices (only once per device)
+        // Get all device IDs
         const devices = getAllDevicesData();
-        Object.keys(devices).forEach(deviceId => {
+        const deviceIds = Object.keys(devices);
+
+        console.log('[App] MQTT connected, initializing...');
+
+        // Step 1: Initialize all devices as offline first
+        initializeDevicesOffline(deviceIds);
+
+        // Step 2: Disable MQTT from setting online status (block retained messages)
+        disableMqttOnlineControl();
+
+        // Step 3: Subscribe to all devices FIRST (required before sending commands)
+        console.log('[App] Subscribing to device topics...');
+        deviceIds.forEach(deviceId => {
             subscribeToDeviceOnce(deviceId);
         });
+
+        // Step 4: Wait a moment for subscriptions to complete, then ping
+        setTimeout(() => {
+            console.log('[App] Performing initial ping check...');
+
+            // Perform initial ping to check device status
+            performInitialPing(() => {
+                console.log('[App] Initial ping completed, enabling MQTT online control...');
+
+                // Step 5: After initial ping, allow MQTT to control online status
+                enableMqttOnlineControl();
+
+                // Step 6: Start periodic ping service
+                startPingService();
+
+                console.log('[App] MQTT initialization complete');
+            });
+        }, 500); // Small delay to ensure subscriptions are ready
     };
 
-    initializeMQTTClient(onConnect, handleMQTTMessage, handleMQTTConnectionLost);
+    initializeMQTTClient(onConnect, handleMQTTMessage, (response) => {
+        handleMQTTConnectionLost(response);
+        // Stop ping service when MQTT disconnects
+        stopPingService();
+    });
 }
 
 /**
@@ -276,28 +347,102 @@ function exposeGlobalFunctions() {
         if (tabName === 'setting') {
             initializeSettings();
         }
+        // Initialize notification view when switching to notification tab
+        if (tabName === 'notification') {
+            renderNotificationList();
+        }
     };
 
     // Modal operations (for dynamic buttons)
     window.showModal = showModal;
     window.hideModal = hideModal;
+    
+    // Notification operations
+    window.clearAllNotifications = () => {
+        if (confirm('Clear all notifications?')) {
+            clearAllNotifications();
+        }
+    };
+    window.dismissNotification = deleteNotification;
 
     // Device power control
     window.toggleDevicePower = async (deviceId, newPowerState) => {
-        try {
-            // Send MQTT command - button will be updated automatically when ESP32 responds
-            const success = sendMQTTCommand(deviceId, 'set_mode', { mode: newPowerState ? 1 : 0 });
+        // Check if device is online first
+        if (!isDeviceOnline(deviceId)) {
+            alert(`Device "${deviceId}" is Offline.\n\nUnable to send control command.`);
+            return;
+        }
 
-            if (success) {
-                console.log(`[App] Sent power command to ${deviceId}: ${newPowerState ? 'ON' : 'OFF'}`);
-                // REMOVED: Button update logic - mqtt-handlers.js will handle it when receiving state response
-            } else {
-                console.error('[App] Failed to send MQTT command');
-                alert('Unable to send control command. Check MQTT connection.');
+        // Get button element to update UI
+        const card = document.getElementById(`device-${deviceId}`);
+        const powerBtn = card?.querySelector('button[onclick*="toggleDevicePower"]');
+
+        if (powerBtn) {
+            // Disable button and show loading
+            powerBtn.disabled = true;
+            powerBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        }
+
+        // Send MQTT command with response callback
+        const result = sendMQTTCommand(deviceId, 'set_mode', { mode: newPowerState ? 1 : 0 }, {
+            onSuccess: () => {
+                console.log(`[App] Power command successful for ${deviceId}`);
+                // Update UI on success
+                if (powerBtn) {
+                    powerBtn.disabled = false;
+                    if (newPowerState) {
+                        powerBtn.classList.remove('btn-danger');
+                        powerBtn.classList.add('btn-success');
+                        powerBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> ON';
+                        powerBtn.setAttribute('onclick', `window.toggleDevicePower('${deviceId}', false)`);
+                    } else {
+                        powerBtn.classList.remove('btn-success');
+                        powerBtn.classList.add('btn-danger');
+                        powerBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> OFF';
+                        powerBtn.setAttribute('onclick', `window.toggleDevicePower('${deviceId}', true)`);
+                    }
+                }
+            },
+            onError: (error) => {
+                console.error(`[App] Power command failed for ${deviceId}:`, error);
+                // Restore button state
+                if (powerBtn) {
+                    powerBtn.disabled = false;
+                    // Restore to previous state (opposite of what we tried to set)
+                    if (!newPowerState) {
+                        powerBtn.classList.remove('btn-danger');
+                        powerBtn.classList.add('btn-success');
+                        powerBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> ON';
+                        powerBtn.setAttribute('onclick', `window.toggleDevicePower('${deviceId}', false)`);
+                    } else {
+                        powerBtn.classList.remove('btn-success');
+                        powerBtn.classList.add('btn-danger');
+                        powerBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> OFF';
+                        powerBtn.setAttribute('onclick', `window.toggleDevicePower('${deviceId}', true)`);
+                    }
+                }
+                const errorMsg = error === 'timeout' ? 'Device not responding' : 'Device error';
+                alert(`${errorMsg}: Unable to ${newPowerState ? 'turn ON' : 'turn OFF'} device.`);
+            },
+            timeout: 5000
+        });
+
+        if (!result) {
+            // Command failed to send
+            if (powerBtn) {
+                powerBtn.disabled = false;
+                // Restore original state
+                if (!newPowerState) {
+                    powerBtn.classList.remove('btn-danger');
+                    powerBtn.classList.add('btn-success');
+                    powerBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> ON';
+                } else {
+                    powerBtn.classList.remove('btn-success');
+                    powerBtn.classList.add('btn-danger');
+                    powerBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> OFF';
+                }
             }
-        } catch (error) {
-            console.error('[App] Toggle device power error:', error);
-            alert('Device control error: ' + error.message);
+            alert('Unable to send control command. Check MQTT connection.');
         }
     };
 
@@ -412,36 +557,24 @@ function exposeGlobalFunctions() {
         switchChartType(type);
     };
 
-    // Track pending toggle commands for timeout checking
-    const pendingToggles = new Map();
-
-    // Expose function to clear pending toggles from MQTT handlers
-    window.clearPendingToggle = (deviceId, feature) => {
-        const key = `${deviceId}_${feature}`;
-        const pending = pendingToggles.get(key);
-        if (pending) {
-            clearTimeout(pending.timeoutId);
-            pendingToggles.delete(key);
-            console.log(`[App] Cleared pending toggle for ${feature}`);
-        }
-    };
-
-    // Expose function to update toggle UI from MQTT state
-    window.updateToggleUI = (deviceId, feature, state) => {
-        if (deviceId !== window.currentDetailDeviceId) return;
-
-        const toggleId = `toggle-${feature}`;
-        const toggleEl = document.getElementById(toggleId);
-        if (toggleEl) {
-            toggleEl.checked = state === 1 || state === true;
-            console.log(`[App] Updated ${feature} toggle to ${state}`);
-        }
-    };
-
     window.toggleFeature = (feature) => {
         const deviceId = window.currentDetailDeviceId;
+        
+        // Get toggle element first to handle early returns
+        const toggleId = `toggle-${feature}`;
+        const toggleEl = document.getElementById(toggleId);
+        if (!toggleEl) return;
+
         if (!deviceId) {
             console.error('[App] No device selected for toggle');
+            toggleEl.checked = !toggleEl.checked; // Revert toggle
+            return;
+        }
+
+        // Check if device is online
+        if (!isDeviceOnline(deviceId)) {
+            toggleEl.checked = !toggleEl.checked; // Revert toggle state
+            alert('Device is offline. Unable to send command.');
             return;
         }
 
@@ -449,48 +582,41 @@ function exposeGlobalFunctions() {
         const deviceName = feature === 'lamp' ? 'light' : feature;
 
         // Get current toggle state (what user just clicked)
-        const toggleId = `toggle-${feature}`;
-        const toggleEl = document.getElementById(toggleId);
-        if (!toggleEl) return;
-
         const newState = toggleEl.checked ? 1 : 0;
+        const previousState = !toggleEl.checked;
+
+        // Immediately revert toggle - will be set correctly on success
+        toggleEl.checked = previousState;
+        toggleEl.disabled = true;
 
         console.log(`[App] Toggle ${deviceName}: ${newState ? 'ON' : 'OFF'}`);
 
-        // Send MQTT command
-        const success = sendMQTTCommand(deviceId, 'set_device', {
+        // Send MQTT command with response callback
+        const result = sendMQTTCommand(deviceId, 'set_device', {
             device: deviceName,
             state: newState
+        }, {
+            onSuccess: () => {
+                console.log(`[App] Toggle ${deviceName} successful`);
+                toggleEl.disabled = false;
+                toggleEl.checked = newState === 1;
+            },
+            onError: (error) => {
+                console.error(`[App] Toggle ${deviceName} failed:`, error);
+                toggleEl.disabled = false;
+                toggleEl.checked = previousState;
+                const featureNames = { fan: 'Fan', lamp: 'Lamp', ac: 'Air Conditioner' };
+                const errorMsg = error === 'timeout' ? 'Device not responding' : 'Device error';
+                alert(`${errorMsg}: Unable to control ${featureNames[feature]}.`);
+            },
+            timeout: 3000
         });
 
-        if (!success) {
+        if (!result) {
+            toggleEl.disabled = false;
+            toggleEl.checked = previousState;
             alert('Unable to send toggle command. Check MQTT connection.');
-            // Revert toggle
-            toggleEl.checked = !toggleEl.checked;
-            return;
         }
-
-        // Start timeout timer (3 seconds)
-        const timeoutId = setTimeout(() => {
-            // If still in pending map after 3s, device didn't respond
-            if (pendingToggles.has(`${deviceId}_${feature}`)) {
-                console.warn(`[App] Device ${deviceId} no response for ${feature}`);
-                alert(`Device did not respond to ${feature === 'fan' ? 'Fan' : feature === 'lamp' ? 'Light' : 'AC'} command`);
-
-                // Revert toggle to previous state
-                toggleEl.checked = !toggleEl.checked;
-
-                // Remove from pending
-                pendingToggles.delete(`${deviceId}_${feature}`);
-            }
-        }, 3000);
-
-        // Store pending toggle
-        pendingToggles.set(`${deviceId}_${feature}`, {
-            timeoutId,
-            expectedState: newState,
-            toggleEl
-        });
     };
 
     // Settings operations - per device actions
