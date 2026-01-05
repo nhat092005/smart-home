@@ -18,7 +18,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <links
+    <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
@@ -231,6 +231,34 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- MQTT Configuration Section -->
+          <div class="mqtt-config-section">
+            <div class="mqtt-config-header">
+              <i class="fa-solid fa-server"></i>
+              <span>MQTT Server</span>
+            </div>
+            <div class="mqtt-config-form">
+              <div class="input-group">
+                <div class="input-with-button">
+                  <input
+                    type="text"
+                    id="mqtt-host-input"
+                    placeholder="raspberrypi.local or 10.247.50.166"
+                    class="mqtt-input"
+                  />
+                  <button
+                    type="button"
+                    id="btn-save-mqtt-host"
+                    class="btn-save-mqtt"
+                    onclick="saveMQTTHost()"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- User Account Section -->

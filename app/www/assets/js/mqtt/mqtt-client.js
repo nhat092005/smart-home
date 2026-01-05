@@ -4,6 +4,8 @@
  * Handles MQTT connection, reconnection, and message publishing
  */
 
+import { resolveHostnameWithCache } from '../core/mdns-resolver.js';
+
 // MQTT configuration constants
 export const MQTT_TOPICS = {
     DATA: 'data',       //!< Sensor data topic
@@ -103,12 +105,12 @@ function loadMQTTConfig() {
         }
     }
 
-    // Default configuration - HiveMQ Cloud
+    // Default configuration - Local Mosquitto Broker (No TLS)
     return {
-        host: "6ceea111b6144c71a57b21faa3553fc6.s1.eu.hivemq.cloud",
-        port: 8884,
+        host: "raspberrypi.local",  // mDNS hostname will be resolved automatically
+        port: 8083,                  // WebSocket port (non-TLS)
         path: "/mqtt",
-        useSSL: true,
+        useSSL: false,               // Disable SSL/TLS
         username: "SmartHome",
         password: "SmartHome01",
         keepalive: 60,
@@ -131,11 +133,23 @@ function generateClientId() {
  * @param {Function} onConnectionLost - Callback when connection lost
  * @returns {Object} MQTT client instance
  */
-export function initializeMQTTClient(onConnect, onMessage, onConnectionLost) {
+export async function initializeMQTTClient(onConnect, onMessage, onConnectionLost) {
     const config = loadMQTTConfig();
 
+    // Resolve hostname if it's a .local address (mDNS)
+    let resolvedHost = config.host;
+    if (config.host.endsWith('.local')) {
+        try {
+            console.log('[MQTT] Resolving mDNS hostname:', config.host);
+            resolvedHost = await resolveHostnameWithCache(config.host);
+            console.log('[MQTT] Resolved to:', resolvedHost);
+        } catch (error) {
+            console.warn('[MQTT] Failed to resolve hostname, using as-is:', error);
+        }
+    }
+
     mqttClient = new Paho.MQTT.Client(
-        config.host,
+        resolvedHost,
         Number(config.port),
         config.path,
         config.clientId

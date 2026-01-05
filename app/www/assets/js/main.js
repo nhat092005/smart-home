@@ -51,7 +51,8 @@ import {
     showTimeModalForDevice,
     applyManualTime,
     closeManualTimeModal,
-    updateManualTimePreview
+    updateManualTimePreview,
+    saveMQTTHost
 } from './settings/settings-manager.js';
 
 // Notification module
@@ -627,6 +628,7 @@ function exposeGlobalFunctions() {
     window.applyManualTime = applyManualTime;
     window.syncTimeToAllDevices = syncTimeToAllDevices;
     window.closeManualTimeModal = closeManualTimeModal;
+    window.saveMQTTHost = saveMQTTHost;
 
     // Update manual time preview when inputs change
     const dateInput = document.getElementById('manual-date-input');

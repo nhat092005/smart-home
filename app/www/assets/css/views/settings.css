@@ -189,6 +189,117 @@
   padding: 4px 8px;
 }
 
+/* MQTT Configuration Section */
+.mqtt-config-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.mqtt-config-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mqtt-config-header i {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.mqtt-config-header span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mqtt-config-form {
+  padding: 0;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.input-group label i {
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+}
+
+.mqtt-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: all var(--transition-base);
+}
+
+.mqtt-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-save-mqtt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.btn-save-mqtt:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-save-mqtt:active {
+  transform: scale(0.98);
+}
+
+.input-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.input-hint span {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
 /* Logout Button - Full Width */
 .btn-logout-full {
   width: 100%;
