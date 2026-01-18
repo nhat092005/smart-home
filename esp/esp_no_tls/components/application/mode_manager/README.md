@@ -1,4 +1,102 @@
-# Mode Manager
+# Mode Manager Module
+
+## Overview
+
+Device operation mode management with NVS persistence. Controls system-wide ON/OFF state affecting sensor reading and data publishing behavior.
+
+## Features
+
+- Two operation modes: MODE_ON and MODE_OFF
+- NVS-based persistence across reboots
+- Global state variable export (isModeON)
+- Mode change callback system
+- Configurable data publish interval
+- Thread-safe mode operations
+
+## Operation Modes
+
+- **MODE_ON**: Normal operation with sensor reading and MQTT publishing
+- **MODE_OFF**: Idle state with minimal activity
+
+## API Functions
+
+### Initialization
+
+```c
+esp_err_t mode_manager_init(void);
+```
+
+### Mode Control
+
+```c
+esp_err_t mode_manager_set_mode(device_mode_t mode);
+esp_err_t mode_manager_toggle_mode(void);
+device_mode_t mode_manager_get_mode(void);
+```
+
+### Event Callbacks
+
+```c
+void mode_manager_register_change_callback(mode_change_callback_t callback);
+```
+
+## Usage Example
+
+```c
+#include "mode_manager.h"
+
+void on_mode_changed(device_mode_t old_mode, device_mode_t new_mode) {
+    printf("Mode changed: %s -> %s\n",
+           old_mode == MODE_ON ? "ON" : "OFF",
+           new_mode == MODE_ON ? "ON" : "OFF");
+}
+
+// Initialize
+mode_manager_init();
+mode_manager_register_change_callback(on_mode_changed);
+
+// Set mode
+mode_manager_set_mode(MODE_ON);
+
+// Toggle mode
+mode_manager_toggle_mode();
+
+// Check current mode
+if (mode_manager_get_mode() == MODE_ON) {
+    printf("System is active\n");
+}
+
+// Access global state
+if (isModeON) {
+    // Perform sensor operations
+}
+```
+
+## Global Variables
+
+```c
+extern bool isModeON;                  // Device mode state
+extern unsigned int interval_seconds;  // Publish interval
+```
+
+## Callback Type
+
+```c
+typedef void (*mode_change_callback_t)(device_mode_t old_mode, device_mode_t new_mode);
+```
+
+## Configuration
+
+Defaults in mode_manager.h:
+- DEFAULT_INTERVAL: 5 seconds
+- MIN_INTERVAL: 1 second
+- MAX_INTERVAL: 3600 seconds (1 hour)
+- STATE_BACKUP_INTERVAL: 60 seconds
+
+## Dependencies
+
+- NVS Flash
+- FreeRTOS
 
 ## Overview
 

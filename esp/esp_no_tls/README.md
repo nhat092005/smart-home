@@ -1,18 +1,32 @@
-# ESP32 Smart Home System
+# ESP32 Smart Home System - Non-TLS Version
 
 ## Overview
 
-IoT-based Smart Home system built on ESP32 using ESP-IDF framework. Features WiFi provisioning, MQTT communication over SSL, sensor monitoring, device control, and OLED display interface.
+Lightweight ESP32 Smart Home system without SSL/TLS encryption. Designed for local network deployments or testing environments where TLS overhead is not required. Built on ESP-IDF v5.x framework with reduced memory footprint.
+
+## Key Differences from Production Version
+
+- **No TLS/SSL**: MQTT over TCP (port 1883) instead of SSL (port 8883)
+- **Reduced Memory**: Lower heap and stack requirements
+- **Faster Connection**: No certificate validation overhead
+- **Simpler Configuration**: No certificate management required
+
+## Security Warning
+
+This version transmits data in plaintext. Use only on trusted local networks. Not recommended for production deployments with internet connectivity.
 
 ## Features
 
-- WiFi station mode with captive portal provisioning
-- MQTT over SSL for secure IoT communication
-- Environmental monitoring (temperature, humidity, light)
-- Device control (fan, light, AC) via buttons and MQTT commands
-- OLED display with real-time clock
-- Status LED indicators
-- NVS persistence for settings
+- WiFi station mode with captive portal fallback
+- MQTT over TCP for unencrypted communication (port 1883)
+- Environmental monitoring: temperature, humidity, light intensity
+- Device control: 3 relay outputs (fan, light, AC)
+- Real-time clock with DS3231
+- 128x64 OLED display interface
+- 5 button inputs with debouncing
+- 3-color status LED indicators
+- NVS persistence for configuration
+- FreeRTOS multi-task architecture
 
 ## Hardware Requirements
 
@@ -50,7 +64,7 @@ esp/
             task_wifi/          # WiFi event handling
         communication/      # Network layer
             wifi_manager/       # WiFi STA/AP management
-            mqtt_manager/       # MQTT client
+            mqtt_manager/       # MQTT client (TCP only)
             webserver/          # HTTP provisioning server
         hardware/           # Hardware abstraction
             button_handler/     # Button input handling
@@ -67,6 +81,30 @@ esp/
         utilities/          # Helper modules
             json_helper/        # JSON parsing/creation
 ```
+
+## Non-TLS Configuration
+
+### MQTT Settings
+
+```c
+// Non-TLS MQTT configuration
+#define MQTT_BROKER_URI     "mqtt://broker.local:1883"
+#define MQTT_TRANSPORT      MQTT_TRANSPORT_OVER_TCP  // No SSL
+#define MQTT_SKIP_CERT      true
+```
+
+### Memory Savings
+
+- **Heap**: ~40KB saved (no mbedTLS)
+- **Stack**: Reduced MQTT task stack (4096 bytes vs 5120 bytes)
+- **Flash**: ~200KB saved (no certificate store)
+
+### Use Cases
+
+- Local network testing
+- Development environment
+- Private LAN deployments
+- Performance benchmarking
 
 ## Build and Flash
 
@@ -176,6 +214,35 @@ Configured via menuconfig. Default pins:
 | Button AC | Configurable |
 | LED Device | Configurable |
 | LED WiFi | Configurable |
+| LED MQTT | Configurable |
+| Relay Fan | Configurable |
+| Relay Light | Configurable |
+| Relay AC | Configurable |
+
+## Version Comparison
+
+| Feature | esp (Production) | esp_demo | esp_no_tls (This) | esp_no_tls_demo |
+|---------|------------------|----------|-------------------|------------------|
+| MQTT Security | SSL/TLS (8883) | SSL/TLS (8883) | TCP (1883) | TCP (1883) |
+| Web Interface | Minimal | Embedded | Minimal | Embedded |
+| Memory Usage | Standard | High | Low | Medium |
+| Certificate Required | Yes | Yes | No | No |
+| Debugging | Standard | Verbose | Standard | Verbose |
+| Use Case | Production | Development | Local Network | Local Testing |
+
+## License
+
+MIT License
+
+## Related Documentation
+
+- [main/README.md](main/README.md) - Application entry point
+- [components/application/README.md](components/application/README.md) - Business logic
+- [components/communication/README.md](components/communication/README.md) - Network layer
+- [components/hardware/README.md](components/hardware/README.md) - Hardware abstraction
+- [components/sensor/README.md](components/sensor/README.md) - Sensor drivers
+- [components/utilities/README.md](components/utilities/README.md) - Helper modules
+- [docs/WIFI_PROVISIONING_FLOWCHART.md](docs/WIFI_PROVISIONING_FLOWCHART.md) - WiFi setup flow
 | LED MQTT | Configurable |
 | Relay Fan | Configurable |
 | Relay Light | Configurable |

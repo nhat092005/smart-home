@@ -1,35 +1,43 @@
 # Sensor Component
 
-I2C sensor drivers and management layer for Smart Home project.
+## Overview
 
-## Structure
+Sensor drivers and management modules for the ESP32 Smart Home system. Provides unified I2C device interface and high-level sensor reading APIs.
+
+## Modules
+
+### Hardware Drivers
+
+- **bh1750** - BH1750 ambient light sensor driver
+- **ds3231** - DS3231 real-time clock with temperature compensation
+- **sht3x** - SHT3x temperature and humidity sensor driver
+- **sh1106** - SH1106 OLED display driver (128x64)
+- **i2cdev** - I2C device abstraction layer using ESP-IDF I2C master API
+
+### Management Layers
+
+- **sensor_manager** - Centralized initialization and device descriptor management
+- **sensor_reader** - High-level unified sensor reading interface
+
+## Architecture
 
 ```
-sensor/
-  i2cdev/          - I2C bus abstraction layer
-  bh1750/          - Light sensor driver (0-65535 lux)
-  sht3x/           - Temperature and humidity sensor
-  ds3231/          - Real-time clock module
-  sh1106/          - OLED display driver (128x64)
-  sensor_manager/  - Unified sensor initialization
-  sensor_reader/   - Unified sensor reading
+Application
+    |
+sensor_reader (Unified API)
+    |
+sensor_manager (Device Management)
+    |
++--------+--------+--------+--------+
+|        |        |        |        |
+ds3231  sht3x   bh1750  sh1106    (Drivers)
+|        |        |        |        |
++--------+--------+--------+--------+
+              |
+           i2cdev (Abstraction Layer)
+              |
+         ESP-IDF I2C Master
 ```
-
-## Hardware Configuration
-
-| Sensor | I2C Address | Function |
-|--------|-------------|----------|
-| DS3231 | 0x68 | RTC timestamp |
-| SHT3x | 0x44 or 0x45 | Temperature, Humidity |
-| BH1750 | 0x23 or 0x5C | Light intensity |
-| SH1106 | 0x3C | OLED display |
-
-## Default I2C Pins
-
-Configured in `i2cdev_config.h`:
-- SDA: GPIO21
-- SCL: GPIO22
-- Speed: 100kHz
 
 ## Quick Start
 
@@ -40,14 +48,29 @@ Configured in `i2cdev_config.h`:
 // Initialize all sensors
 sensor_manager_init_default();
 
-// Read all sensor data
+// Read all sensors
 sensor_data_t data;
 sensor_reader_read_all(&data);
 
 if (data.valid) {
-    printf("Temp: %.2f C, Humidity: %.2f%%, Light: %d lux\n",
-           data.temperature, data.humidity, data.light);
+    printf("Temperature: %.2f°C\n", data.temperature);
+    printf("Humidity: %.2f%%\n", data.humidity);
+    printf("Light: %u lux\n", data.light);
+    printf("Timestamp: %lu\n", data.timestamp);
 }
+```
+
+## I2C Configuration
+
+Default pins defined in `i2cdev_config.h`:
+- SDA: GPIO 21
+- SCL: GPIO 22
+- Frequency: 100 kHz
+
+## Dependencies
+
+- ESP-IDF I2C driver
+- FreeRTOS
 ```
 
 ## Dependencies

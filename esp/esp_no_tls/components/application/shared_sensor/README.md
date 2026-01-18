@@ -1,4 +1,137 @@
-# Shared Sensor Data
+# Shared Sensor Data Module
+
+## Overview
+
+Thread-safe sensor data sharing across FreeRTOS tasks. Provides mutex-protected access to current sensor readings for display, MQTT publishing, and logging.
+
+## Features
+
+- Centralized sensor data storage
+- Mutex-based thread synchronization
+- Atomic read/write operations
+- Latest sensor reading cache
+- Task coordination support
+
+## Data Structure
+
+```c
+typedef struct {
+    float temperature;     // Temperature in °C
+    float humidity;        // Relative humidity in %
+    uint16_t light;        // Light level in lux
+    char datetime[32];     // ISO 8601 datetime string
+} sensor_data_t;
+```
+
+## API Functions
+
+### Initialization
+
+```c
+void shared_sensor_init(void);
+```
+
+### Data Access
+
+```c
+void shared_sensor_set_data(sensor_data_t *data);
+void shared_sensor_get_data(sensor_data_t *data);
+```
+
+## Usage Example
+
+```c
+#include "shared_sensor.h"
+
+// Task 1: Sensor reading task
+void sensor_reading_task(void *pvParameters) {
+    sensor_data_t readings;
+    
+    while (1) {
+        // Read sensors
+        readings.temperature = read_temperature();
+        readings.humidity = read_humidity();
+        readings.light = read_light();
+        snprintf(readings.datetime, sizeof(readings.datetime), 
+                 "%04d-%02d-%02d %02d:%02d:%02d",
+                 year, month, day, hour, minute, second);
+        
+        // Update shared data (thread-safe)
+        shared_sensor_set_data(&readings);
+        
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+// Task 2: Display task
+void display_task(void *pvParameters) {
+    sensor_data_t current_data;
+    
+    while (1) {
+        // Get current readings (thread-safe)
+        shared_sensor_get_data(&current_data);
+        
+        // Update display
+        display_temperature(current_data.temperature);
+        display_humidity(current_data.humidity);
+        display_light(current_data.light);
+        
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+// Task 3: MQTT publishing task
+void mqtt_task(void *pvParameters) {
+    sensor_data_t data;
+    
+    while (1) {
+        if (is_connected()) {
+            // Get latest data (thread-safe)
+            shared_sensor_get_data(&data);
+            
+            // Publish to MQTT
+            publish_sensor_data(&data);
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(interval_seconds * 1000));
+    }
+}
+
+void app_main(void) {
+    // Initialize shared data module
+    shared_sensor_init();
+    
+    // Create tasks
+    xTaskCreate(sensor_reading_task, "sensor", 4096, NULL, 5, NULL);
+    xTaskCreate(display_task, "display", 3072, NULL, 4, NULL);
+    xTaskCreate(mqtt_task, "mqtt", 5120, NULL, 4, NULL);
+}
+```
+
+## Thread Safety
+
+- All operations protected by FreeRTOS mutex
+- Blocking access with timeout
+- Copy-based data transfer
+- No shared pointers
+
+## Synchronization Details
+
+```c
+static SemaphoreHandle_t data_mutex = NULL;
+
+void shared_sensor_set_data(sensor_data_t *data) {
+    if (xSemaphoreTake(data_mutex, portMAX_DELAY)) {
+        memcpy(&shared_data, data, sizeof(sensor_data_t));
+        xSemaphoreGive(data_mutex);
+    }
+}
+```
+
+## Dependencies
+
+- FreeRTOS (mutex support)
+- Standard library (string.h)
 
 ## Overview
 

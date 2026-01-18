@@ -1,6 +1,106 @@
-# Sensor Manager
+# Sensor Manager Module
 
-Unified initialization and management for all I2C sensors.
+## Overview
+
+Centralized initialization and management system for all I2C sensors in the Smart Home project. Handles device descriptor lifecycle and sensor availability tracking.
+
+## Features
+
+- Unified initialization for all sensors
+- Automatic I2C bus configuration
+- Device health monitoring
+- Sensor availability flags
+- Graceful degradation on sensor failures
+- RTC timestamp management
+- Display device access
+
+## Managed Sensors
+
+- DS3231 RTC
+- SHT3x temperature/humidity sensor
+- BH1750 light sensor
+- SH1106 OLED display
+
+## API Functions
+
+### Initialization
+
+```c
+esp_err_t sensor_manager_init_default(void);
+esp_err_t sensor_manager_init(gpio_num_t sda, gpio_num_t scl);
+```
+
+### Status
+
+```c
+esp_err_t sensor_manager_get_status(sensor_status_t *status);
+```
+
+### Timestamp Management
+
+```c
+esp_err_t sensor_manager_get_timestamp(uint32_t *timestamp);
+esp_err_t sensor_manager_set_timestamp(uint32_t timestamp);
+```
+
+### Display Access
+
+```c
+sh1106_t *sensor_manager_get_display(void);
+```
+
+## Usage Example
+
+```c
+#include "sensor_manager.h"
+
+// Initialize all sensors with default pins
+esp_err_t ret = sensor_manager_init_default();
+
+// Check sensor status
+sensor_status_t status;
+sensor_manager_get_status(&status);
+printf("DS3231: %s\n", status.ds3231_ok ? "OK" : "FAIL");
+printf("SHT3x: %s\n", status.sht3x_ok ? "OK" : "FAIL");
+printf("BH1750: %s\n", status.bh1750_ok ? "OK" : "FAIL");
+
+// Get current timestamp
+uint32_t timestamp;
+sensor_manager_get_timestamp(&timestamp);
+
+// Set RTC time
+sensor_manager_set_timestamp(1700000000);
+
+// Access display
+sh1106_t *display = sensor_manager_get_display();
+if (display) {
+    sh1106_clear_display(display);
+    sh1106_update_display(display);
+}
+```
+
+## Initialization Behavior
+
+The manager initializes all sensors but continues operation even if some sensors fail. Use `sensor_manager_get_status()` to check which sensors are available.
+
+## Data Types
+
+### sensor_status_t
+
+```c
+typedef struct {
+    bool ds3231_ok;
+    bool sht3x_ok;
+    bool bh1750_ok;
+    bool sh1106_ok;
+} sensor_status_t;
+```
+
+## Dependencies
+
+- i2cdev abstraction layer
+- Individual sensor drivers (ds3231, sht3x, bh1750, sh1106)
+- FreeRTOS
 
 ## Features
 

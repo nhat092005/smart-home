@@ -1,4 +1,136 @@
-# Task Button
+# Button Handling Task
+
+## Overview
+
+FreeRTOS task for button event monitoring and command execution. Implements non-blocking button state checking with action dispatch.
+
+## Features
+
+- Continuous button monitoring loop
+- Integration with button_handler module
+- Relay control commands
+- Mode toggle support
+- WiFi reset functionality
+- Configurable polling interval
+
+## Task Function
+
+```c
+void button_task(void *pvParameters);
+```
+
+## Button Mapping
+
+| Button | GPIO | Primary Action | Long Press (if applicable) |
+|--------|------|----------------|---------------------------|
+| BTN1 | 32 | Toggle Light Relay | - |
+| BTN2 | 33 | Toggle Fan Relay | - |
+| BTN3 | 25 | Toggle AC Relay | - |
+| BTN4 | 26 | Toggle Operation Mode | - |
+| BTN5 | 23 | - | WiFi Reset (>3s) |
+
+## Usage Example
+
+```c
+#include "task_button.h"
+#include "task_manager.h"
+
+void app_main(void) {
+    // Initialize hardware first
+    button_handler_init();
+    device_control_init();
+    mode_manager_init();
+    
+    // Create button task (typically done by task_manager)
+    xTaskCreate(button_task, "button", 3072, NULL, 3, NULL);
+    
+    // Task continuously monitors button states and executes commands
+}
+```
+
+## Task Loop
+
+```c
+void button_task(void *pvParameters) {
+    while (1) {
+        // Process all button events
+        button_handler_process();
+        
+        // Check individual buttons
+        if (button_handler_is_pressed(BUTTON_1)) {
+            device_control_toggle(DEVICE_LIGHT);
+            ESP_LOGI(TAG, "Light toggled");
+        }
+        
+        if (button_handler_is_pressed(BUTTON_2)) {
+            device_control_toggle(DEVICE_FAN);
+            ESP_LOGI(TAG, "Fan toggled");
+        }
+        
+        if (button_handler_is_pressed(BUTTON_3)) {
+            device_control_toggle(DEVICE_AC);
+            ESP_LOGI(TAG, "AC toggled");
+        }
+        
+        if (button_handler_is_pressed(BUTTON_4)) {
+            mode_manager_toggle_mode();
+            ESP_LOGI(TAG, "Mode toggled");
+        }
+        
+        if (button_handler_is_long_pressed(BUTTON_5)) {
+            wifi_manager_reset();
+            ESP_LOGI(TAG, "WiFi reset triggered");
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+}
+```
+
+## Button Events
+
+- **Short Press**: Immediate action on button release
+- **Long Press**: Action after 3 seconds hold (BTN5 only)
+- **Debouncing**: Handled by button_handler module
+
+## Task Configuration
+
+- Task name: "button"
+- Stack size: 3072 bytes
+- Priority: 3 (high)
+- Polling interval: 50ms
+
+## State Diagram
+
+```
+[Idle] -> [Button Pressed] -> [Debounce] -> [Action] -> [Idle]
+                                   |
+                                   v
+                            [Long Press Detected] -> [WiFi Reset]
+```
+
+## Integration Points
+
+```c
+// Device control
+device_control_toggle(DEVICE_LIGHT);
+device_control_set(DEVICE_FAN, 1);
+
+// Mode management
+mode_manager_toggle_mode();
+mode_manager_set_mode(MODE_ON);
+
+// WiFi management
+wifi_manager_reset();
+```
+
+## Dependencies
+
+- button_handler
+- device_control
+- mode_manager
+- wifi_manager
+- FreeRTOS
 
 ## Overview
 

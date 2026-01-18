@@ -2,7 +2,90 @@
 
 ## Overview
 
-The Application component implements the business logic layer for the ESP32 Smart Home system. It orchestrates all system tasks, manages device modes, handles MQTT communication, and coordinates between hardware drivers and communication layers.
+Business logic layer orchestrating all system tasks for the ESP32 Smart Home system. Coordinates hardware drivers, communication layers, and implements the main application control flow.
+
+## Modules
+
+### Core Management
+
+- **mode_manager** - Device operation mode (ON/OFF) with NVS persistence
+- **mqtt_callback** - MQTT event and command callback registry
+- **shared_sensor** - Thread-safe sensor data sharing between tasks
+- **task_manager** - Global configuration and task coordination
+
+### FreeRTOS Tasks
+
+- **task_init** - System initialization orchestrator
+- **task_button** - Button event queue and processing
+- **task_display** - OLED display rendering loop
+- **task_mode** - Sensor reading and display update coordination
+- **task_mqtt** - MQTT publishing and command handling
+- **task_status** - Status LED state polling
+- **task_wifi** - WiFi event handling and MQTT triggering
+
+## Task Architecture
+
+```
+       task_init (startup)
+            |
+    +-------+-------+
+    |       |       |
+ task_wifi task_button task_status
+    |       |       |
+    +-------+-------+
+            |
+      task_mqtt <--> mqtt_callback
+            |               |
+      shared_sensor    mode_manager
+            |
+      task_mode
+            |
+      task_display
+```
+
+## Data Flow
+
+```
+Sensors --> task_mode --> shared_sensor --> task_mqtt --> MQTT Broker
+                |                                ^
+                v                                |
+            task_display                  mqtt_callback
+```
+
+## Quick Start
+
+```c
+// Main application entry
+void app_main(void) {
+    // Initialize all components
+    task_init();
+    
+    // Tasks are now running
+    // - Button events processed via queue
+    // - MQTT publishes sensor data periodically
+    // - Display updates every second
+    // - Status LEDs show system state
+}
+```
+
+## Configuration
+
+Configurable via Kconfig:
+- VERSION_APP: Application version (default: "1.0")
+- INTERVAL_TIME_MS: Sensor/publish interval (default: 5000ms)
+
+## Global State Variables
+
+- **isModeON** (bool): Device mode state
+- **isWiFi** (bool): WiFi connection state
+- **isMQTT** (bool): MQTT connection state
+
+## Dependencies
+
+- hardware (button_handler, device_control, status_led)
+- sensor (sensor_manager, sensor_reader)
+- communication (wifi_manager, mqtt_manager)
+- utilities (json_helper)
 
 ## Architecture
 

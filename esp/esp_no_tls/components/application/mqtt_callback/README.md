@@ -1,4 +1,106 @@
-# MQTT Callback Manager
+# MQTT Callback Registry
+
+## Overview
+
+Extensible command registration system for MQTT message handling. Provides dynamic callback registry mapping MQTT topics to handler functions.
+
+## Features
+
+- Dynamic callback registration
+- Topic-based command dispatch
+- Automatic topic matching
+- Extensible command set
+- Decoupled message handling
+
+## API Functions
+
+### Callback Registration
+
+```c
+esp_err_t mqtt_callback_register(const char *topic, mqtt_callback_func callback);
+```
+
+### Command Dispatch
+
+```c
+esp_err_t mqtt_callback_dispatch(const char *topic, const char *data, int data_len);
+```
+
+### Callback Management
+
+```c
+esp_err_t mqtt_callback_clear(void);
+```
+
+## Usage Example
+
+```c
+#include "mqtt_callback.h"
+#include "esp_log.h"
+
+static const char *TAG = "APP";
+
+void handle_light_command(const char *topic, const char *data, int len) {
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%.*s", len, data);
+    ESP_LOGI(TAG, "Light command: %s", buffer);
+    
+    if (strcmp(buffer, "ON") == 0) {
+        // Turn on light
+    } else if (strcmp(buffer, "OFF") == 0) {
+        // Turn off light
+    }
+}
+
+void handle_fan_command(const char *topic, const char *data, int len) {
+    ESP_LOGI(TAG, "Fan command received");
+    // Handle fan control
+}
+
+void app_main(void) {
+    // Register command handlers
+    mqtt_callback_register("device/light", handle_light_command);
+    mqtt_callback_register("device/fan", handle_fan_command);
+    
+    // Simulate message reception
+    mqtt_callback_dispatch("device/light", "ON", 2);
+    mqtt_callback_dispatch("device/fan", "SPEED_HIGH", 10);
+}
+```
+
+## Callback Type
+
+```c
+typedef void (*mqtt_callback_func)(const char *topic, const char *data, int data_len);
+```
+
+## Registry Capacity
+
+Default configuration:
+- Maximum callbacks: 16 simultaneous registrations
+- Topic string length: Dynamic allocation
+- Thread-safe operations
+
+## Integration Pattern
+
+```c
+// In task_init.c - Register all command handlers
+mqtt_callback_register("device/mode", on_mode_command);
+mqtt_callback_register("device/light", on_light_command);
+mqtt_callback_register("device/fan", on_fan_command);
+mqtt_callback_register("device/ac", on_ac_command);
+
+// In task_mqtt.c - Dispatch incoming messages
+void on_mqtt_message(const char *topic, const char *data, int len) {
+    mqtt_callback_dispatch(topic, data, len);
+}
+```
+
+## Dependencies
+
+- ESP-IDF
+- FreeRTOS
+- Standard library (string.h) Manager
 
 ## Overview
 

@@ -1,8 +1,138 @@
-# WiFi Manager
+# WiFi Manager Module
 
 ## Overview
 
-The WiFi Manager component provides comprehensive WiFi connectivity management for ESP32. It supports Station (STA) mode for connecting to access points, Access Point (AP) mode for provisioning, credential storage in NVS, and includes a captive portal DNS server for automatic redirect during provisioning.
+Comprehensive WiFi connectivity management supporting Station and Access Point modes. Handles credential storage, automatic reconnection, and captive portal provisioning.
+
+## Features
+
+- Station mode with automatic reconnection and retry logic
+- Access Point mode for device provisioning
+- NVS credential persistence
+- Captive portal DNS server
+- Network scanning with RSSI measurement
+- Event callback notification system
+- Thread-safe operations
+- Configurable via Kconfig
+
+## API Functions
+
+### Initialization
+
+```c
+esp_err_t wifi_manager_init(void);
+esp_err_t wifi_manager_start(void);
+```
+
+### Connection Management
+
+```c
+esp_err_t wifi_manager_connect(const char *ssid, const char *password);
+esp_err_t wifi_manager_disconnect(void);
+bool wifi_manager_is_connected(void);
+bool wifi_manager_is_provisioned(void);
+```
+
+### Provisioning Mode
+
+```c
+esp_err_t wifi_manager_start_provisioning(void);
+esp_err_t wifi_manager_stop_provisioning(void);
+```
+
+### Network Operations
+
+```c
+esp_err_t wifi_manager_scan_networks(wifi_ap_record_t *ap_list, uint16_t *ap_count);
+esp_err_t wifi_manager_get_ip_info(esp_netif_ip_info_t *ip_info);
+int8_t wifi_manager_get_rssi(void);
+```
+
+### Credential Management
+
+```c
+esp_err_t wifi_manager_save_credentials(const char *ssid, const char *password);
+esp_err_t wifi_manager_clear_credentials(void);
+```
+
+## Usage Example
+
+```c
+#include "wifi_manager.h"
+
+void wifi_event_handler(wifi_manager_event_t event, void *data) {
+    switch(event) {
+        case WIFI_EVENT_CONNECTED:
+            printf("WiFi connected\n");
+            break;
+        case WIFI_EVENT_GOT_IP:
+            printf("Got IP address\n");
+            break;
+        case WIFI_EVENT_DISCONNECTED:
+            printf("WiFi disconnected\n");
+            break;
+    }
+}
+
+// Initialize
+wifi_manager_init();
+wifi_manager_set_callback(wifi_event_handler);
+
+// Check if already provisioned
+if (wifi_manager_is_provisioned()) {
+    wifi_manager_start();
+} else {
+    wifi_manager_start_provisioning();
+}
+
+// Connect to specific network
+wifi_manager_connect("MySSID", "MyPassword");
+
+// Wait for connection
+while (!wifi_manager_is_connected()) {
+    vTaskDelay(pdMS_TO_TICKS(100));
+}
+```
+
+## Event Types
+
+```c
+typedef enum {
+    WIFI_EVENT_DISCONNECTED,
+    WIFI_EVENT_CONNECTING,
+    WIFI_EVENT_CONNECTED,
+    WIFI_EVENT_GOT_IP,
+    WIFI_EVENT_PROVISIONING_STARTED,
+    WIFI_EVENT_PROVISIONING_FAILED,
+    WIFI_EVENT_PROVISIONING_SUCCESS
+} wifi_manager_event_t;
+```
+
+## Configuration
+
+Configurable via Kconfig:
+- WIFI_AP_SSID: AP mode SSID (default: SmartHome_Setup)
+- WIFI_MAX_RETRY: Connection retry count (default: 5)
+- WIFI_SCAN_MAX_AP: Maximum APs to scan (default: 20)
+- DNS_SERVER_PORT: DNS server port (default: 53)
+- HTTP_SERVER_PORT: HTTP server port (default: 80)
+
+## Provisioning Flow
+
+1. Device starts in AP mode
+2. DNS server redirects all requests to device IP
+3. User connects to AP and opens browser
+4. Web interface shows available networks
+5. User enters credentials
+6. Device saves credentials and connects
+
+## Dependencies
+
+- ESP-IDF WiFi driver
+- ESP-IDF netif
+- NVS Flash
+- LWIP (for DNS server)
+- webserver component
 
 ## Features
 

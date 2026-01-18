@@ -42,7 +42,7 @@ static mqtt_command_callback_t command_callback = NULL;
 static char topic_data[MQTT_TOPIC_MAX_LEN];     //!< QoS=0, Retain=No
 static char topic_state[MQTT_TOPIC_MAX_LEN];    //!< QoS=1, Retain=Yes
 static char topic_info[MQTT_TOPIC_MAX_LEN];     //!< QoS=1, Retain=Yes
-static char topic_command[MQTT_TOPIC_MAX_LEN];  //!< F QoS=1, Retain=No
+static char topic_command[MQTT_TOPIC_MAX_LEN];  //!< QoS=1, Retain=No
 static char topic_response[MQTT_TOPIC_MAX_LEN]; //!< QoS=1, Retain=Yes
 
 /* Private function prototypes -----------------------------------------------*/

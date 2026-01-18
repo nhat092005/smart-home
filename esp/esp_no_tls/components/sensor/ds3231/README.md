@@ -1,29 +1,38 @@
 # DS3231 Real-Time Clock Driver
 
-High-precision RTC module driver for ESP32.
+## Overview
 
-## Specifications
+Driver for DS3231 extremely accurate I2C real-time clock with temperature-compensated crystal oscillator and integrated 32kHz output.
 
-- Accuracy: +/- 2ppm (0 to +40 C)
-- Battery backup support
-- Two programmable alarms
-- Temperature compensated crystal oscillator
+## Features
 
-## I2C Address
+- Timekeeping with seconds to year range
+- Two programmable time-of-day alarms
+- Temperature-compensated oscillator (±2ppm accuracy)
+- Battery backup support for time retention
+- Integrated temperature sensor (-40°C to +85°C)
+- Aging offset adjustment
+- 32kHz square wave output
 
-Fixed address: 0x68
+## Hardware Specifications
 
-## API Reference
+- I2C address: 0x68
+- Supply voltage: 2.3V - 5.5V
+- Timekeeping current: 100 µA
+- Backup current: 70 nA
+- Temperature accuracy: ±3°C
+
+## API Functions
 
 ### Initialization
 
 ```c
-esp_err_t ds3231_init_desc(ds3231_t *dev, i2c_port_t port,
+esp_err_t ds3231_init_desc(ds3231_t *dev, i2c_port_t port, 
                            gpio_num_t sda_gpio, gpio_num_t scl_gpio);
 esp_err_t ds3231_free_desc(ds3231_t *dev);
 ```
 
-### Time Operations
+### Time Management
 
 ```c
 esp_err_t ds3231_set_time(ds3231_t *dev, struct tm *time);
@@ -32,22 +41,70 @@ esp_err_t ds3231_set_timestamp(ds3231_t *dev, uint32_t timestamp);
 esp_err_t ds3231_get_timestamp(ds3231_t *dev, uint32_t *timestamp);
 ```
 
-### Alarm Functions
+### Alarm Configuration
 
 ```c
-esp_err_t ds3231_set_alarm(ds3231_t *dev, ds3231_alarm_t alarms,
-                           struct tm *time1, ds3231_alarm1_rate_t option1,
-                           struct tm *time2, ds3231_alarm2_rate_t option2);
-esp_err_t ds3231_get_alarm_flags(ds3231_t *dev, ds3231_alarm_t *alarms);
-esp_err_t ds3231_clear_alarm_flags(ds3231_t *dev, ds3231_alarm_t alarms);
-esp_err_t ds3231_enable_alarm_ints(ds3231_t *dev, ds3231_alarm_t alarms);
-esp_err_t ds3231_disable_alarm_ints(ds3231_t *dev, ds3231_alarm_t alarms);
+esp_err_t ds3231_set_alarm(ds3231_t *dev, ds3231_alarm_t alarm, struct tm *time, 
+                           ds3231_alarm1_rate_t rate);
+esp_err_t ds3231_get_alarm(ds3231_t *dev, ds3231_alarm_t alarm, struct tm *time, 
+                           ds3231_alarm1_rate_t *rate);
+esp_err_t ds3231_clear_alarm_flags(ds3231_t *dev, ds3231_alarm_t alarm);
+```
+
+### Temperature Reading
+
+```c
+esp_err_t ds3231_get_temp_float(ds3231_t *dev, float *temp);
+esp_err_t ds3231_get_temp_integer(ds3231_t *dev, int8_t *temp);
+```
+
+## Usage Example
+
+```c
+#include "ds3231.h"
+#include <time.h>
+
+ds3231_t rtc;
+
+// Initialize
+ds3231_init_desc(&rtc, I2C_NUM_0, GPIO_NUM_21, GPIO_NUM_22);
+i2c_dev_init(&rtc.i2c_dev);
+
+// Set time (2024-01-15 14:30:00)
+struct tm time = {
+    .tm_year = 124,  // 2024 - 1900
+    .tm_mon = 0,     // January (0-11)
+    .tm_mday = 15,
+    .tm_hour = 14,
+    .tm_min = 30,
+    .tm_sec = 0
+};
+ds3231_set_time(&rtc, &time);
+
+// Read time
+ds3231_get_time(&rtc, &time);
+
+// Get Unix timestamp
+uint32_t timestamp;
+ds3231_get_timestamp(&rtc, &timestamp);
+
+// Read temperature
+float temp;
+ds3231_get_temp_float(&rtc, &temp);
+
+// Cleanup
+ds3231_free_desc(&rtc);
 ```
 
 ## Alarm Types
 
-| Alarm | Precision | Description |
-|-------|-----------|-------------|
+- **DS3231_ALARM_1**: Can match seconds, minutes, hours, day
+- **DS3231_ALARM_2**: Can match minutes, hours, day (no seconds)
+
+## Dependencies
+
+- i2cdev abstraction layer
+- FreeRTOS
 | `DS3231_ALARM_1` | Seconds | Full time match |
 | `DS3231_ALARM_2` | Minutes | No seconds field |
 
