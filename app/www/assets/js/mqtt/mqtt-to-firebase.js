@@ -5,7 +5,8 @@
  */
 
 import { db } from '../core/firebase-config.js';
-import { ref, set, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { ref, set, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { isDeviceOnline } from '../devices/device-card.js';
 
 /**
  * Sync sensor data from MQTT to Firebase
@@ -22,19 +23,19 @@ export async function syncSensorDataToFirebase(deviceId, sensorData) {
         return;
     }
 
+    // Only sync data if device is online (receiving MQTT messages)
+    if (!isDeviceOnline(deviceId)) {
+        console.warn(`[MQTT to Firebase] Skipping sync for offline device: ${deviceId}`);
+        return;
+    }
+
     try {
         const timestamp = sensorData.timestamp || Date.now();
 
-        // 1. Update current device sensors in /devices/{deviceId}/sensors
-        const deviceSensorsRef = ref(db, `devices/${deviceId}/sensors`);
-        await update(deviceSensorsRef, {
-            temperature: parseFloat(sensorData.temperature || 0),
-            humidity: parseFloat(sensorData.humidity || 0),
-            light: parseInt(sensorData.light || 0),
-            lastUpdate: timestamp
-        });
+        // DO NOT update /devices/{deviceId}/sensors - it triggers onValue loop!
+        // App reads sensor data from MQTT messages directly
 
-        // 2. Store historical data in /history/{deviceId}/records
+        // Store historical data in /history/{deviceId}/records (for charts)
         const historyRef = ref(db, `history/${deviceId}/records`);
         const newRecordRef = push(historyRef);
         await set(newRecordRef, {
@@ -44,7 +45,7 @@ export async function syncSensorDataToFirebase(deviceId, sensorData) {
             timestamp: timestamp
         });
 
-        // 3. Update SmartHome/{deviceId}/data (mirror MQTT structure)
+        // Update SmartHome/{deviceId}/data (mirror MQTT structure for external use)
         const smartHomeDataRef = ref(db, `SmartHome/${deviceId}/data`);
         await set(smartHomeDataRef, {
             temperature: parseFloat(sensorData.temperature || 0),
@@ -75,28 +76,19 @@ export async function syncStateToFirebase(deviceId, stateData) {
         return;
     }
 
+    // Only sync state if device is online
+    if (!isDeviceOnline(deviceId)) {
+        console.warn(`[MQTT to Firebase] Skipping sync for offline device: ${deviceId}`);
+        return;
+    }
+
     try {
         const timestamp = Date.now();
 
-        // 1. Update device states in /devices/{deviceId}/states
-        const deviceStatesRef = ref(db, `devices/${deviceId}/states`);
-        await update(deviceStatesRef, {
-            power: stateData.mode === 1, // Convert mode to boolean
-            fan: stateData.fan === 1,
-            lamp: stateData.light === 1, // MQTT send 'light', UI use 'lamp'
-            ac: stateData.ac === 1,
-            lastUpdate: timestamp
-        });
-
-        // 2. Update interval in /devices/{deviceId}/interval
-        if (stateData.interval !== undefined) {
-            const deviceRef = ref(db, `devices/${deviceId}`);
-            await update(deviceRef, {
-                interval: parseInt(stateData.interval || 5)
-            });
-        }
-
-        // 3. Update SmartHome/{deviceId}/state (mirror MQTT structure)
+        // DO NOT update /devices/{deviceId}/states - it triggers onValue loop!
+        // App reads state from MQTT cache, not Firebase
+        
+        // ONLY update SmartHome/{deviceId}/state (mirror MQTT structure for history/external use)
         const smartHomeStateRef = ref(db, `SmartHome/${deviceId}/state`);
         await set(smartHomeStateRef, {
             mode: stateData.mode || 0,
@@ -132,19 +124,10 @@ export async function syncInfoToFirebase(deviceId, infoData) {
     try {
         const timestamp = Date.now();
 
-        // 1. Update device info in /devices/{deviceId}
-        const deviceRef = ref(db, `devices/${deviceId}`);
-        const updates = {
-            lastUpdate: timestamp
-        };
+        // DO NOT update /devices/{deviceId} - it triggers onValue loop!
+        // Device metadata (name, wifi, etc) should only be updated manually via UI
 
-        if (infoData.ssid) updates.wifi = infoData.ssid;
-        if (infoData.ip) updates.ip = infoData.ip;
-        if (infoData.firmware) updates.firmware = infoData.firmware;
-
-        await update(deviceRef, updates);
-
-        // 2. Update SmartHome/{deviceId}/info (mirror MQTT structure)
+        // ONLY update SmartHome/{deviceId}/info (mirror MQTT structure)
         const smartHomeInfoRef = ref(db, `SmartHome/${deviceId}/info`);
         await set(smartHomeInfoRef, {
             ssid: infoData.ssid || '',
@@ -187,5 +170,38 @@ export async function initializeDeviceInFirebase(deviceId, deviceName) {
         console.log(`[MQTT to Firebase] Device ${deviceId} initialized`);
     } catch (error) {
         console.error('[MQTT to Firebase] Error initializing device:', error);
+    }
+}
+
+/**
+ * Clear stale sensor and state data when device goes offline
+ * Prevents displaying outdated information from previous session
+ * @param {string} deviceId - Device identifier
+ */
+export async function clearStaleDeviceData(deviceId) {
+    if (!db) {
+        console.error('[MQTT to Firebase] Database not initialized');
+        return;
+    }
+
+    try {
+        // Clear sensor data from /devices/{deviceId}/sensors
+        const deviceSensorsRef = ref(db, `devices/${deviceId}/sensors`);
+        await remove(deviceSensorsRef);
+
+        // Clear state data from /devices/{deviceId}/states
+        const deviceStatesRef = ref(db, `devices/${deviceId}/states`);
+        await remove(deviceStatesRef);
+
+        // Clear SmartHome mirror data
+        const smartHomeDataRef = ref(db, `SmartHome/${deviceId}/data`);
+        await remove(smartHomeDataRef);
+        
+        const smartHomeStateRef = ref(db, `SmartHome/${deviceId}/state`);
+        await remove(smartHomeStateRef);
+
+        console.log(`[MQTT to Firebase] Cleared stale data for offline device: ${deviceId}`);
+    } catch (error) {
+        console.error('[MQTT to Firebase] Error clearing stale data:', error);
     }
 }

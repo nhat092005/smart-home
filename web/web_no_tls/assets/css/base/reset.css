@@ -1,0 +1,50 @@
+/**
+  * CSS Reset and Base Styles
+  * This file resets default browser styles and sets base styles for the application.
+  */
+
+/* Reset default margin, padding, and box-sizing */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Remove default button styles */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Remove default input styles */
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Utility: Hidden element */
+.hidden {
+  display: none !important;
+}
+
+/* Noscript warning */
+.noscript-warning {
+  padding: 20px;
+  background: #fee2e2;
+  color: #991b1b;
+  text-align: center;
+  font-weight: 600;
+}

@@ -2,13 +2,13 @@
  * device-manager.js
  * Device management module
  * Handles device CRUD operations and Firebase sync
+ * 
+ * SYNCHRONIZED WITH WEB VERSION
  */
 
 import { db } from '../core/firebase-config.js';
 import { ref, onValue, set, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { renderDeviceGrid } from './device-card.js';
-
-// TODO: subscribeToDevice import - subscription handled in main.js to prevent loops 
 
 // Track active Firebase listeners
 let activeListeners = [];
@@ -18,16 +18,20 @@ let cachedDevices = {}; // Cache current devices data
 /**
  * Initialize device manager and listen for device changes
  * @param {string} viewType - View type: 'manage' or 'dashboard'
+ * @param {Function} onInitialLoad - Callback when initial devices are loaded
  */
-export function initializeDeviceManager(viewType = 'manage') {
+export function initializeDeviceManager(viewType = 'manage', onInitialLoad = null) {
     currentViewType = viewType;
 
     if (!db) {
         console.error('[DeviceManager] Firebase not initialized');
+        if (onInitialLoad) onInitialLoad();
         return;
     }
 
     const devicesRef = ref(db, 'devices');
+
+    let isFirstLoad = true;
 
     // Listen for device changes
     const unsubscribe = onValue(devicesRef, (snapshot) => {
@@ -36,15 +40,24 @@ export function initializeDeviceManager(viewType = 'manage') {
             cachedDevices = devices; // Cache the devices data
             console.log('[DeviceManager] Devices updated:', Object.keys(devices).length);
             renderDeviceGrid(devices, currentViewType);
-
-            // TODO: Auto-subscribe moved to main.js to prevent infinite loop
         } else {
             console.log('[DeviceManager] No devices found');
             cachedDevices = {};
             renderDeviceGrid({}, currentViewType);
         }
+
+        // Call onInitialLoad callback only on first load
+        if (isFirstLoad && onInitialLoad) {
+            isFirstLoad = false;
+            console.log('[DeviceManager] Initial load complete');
+            onInitialLoad();
+        }
     }, (error) => {
         console.error('[DeviceManager] Firebase listener error:', error);
+        if (isFirstLoad && onInitialLoad) {
+            isFirstLoad = false;
+            onInitialLoad();
+        }
     });
 
     activeListeners.push(unsubscribe);

@@ -1,0 +1,9 @@
+idf_component_register(
+    SRCS
+    "task_display.c"
+    INCLUDE_DIRS 
+    "include"
+    REQUIRES
+    sensor_manager
+    sh1106
+)

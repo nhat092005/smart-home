@@ -1,0 +1,53 @@
+/* ========================================
+   FOOTER LAYOUT
+   ======================================== */
+
+.footer {
+  margin-top: auto;
+  background-color: white;
+  padding: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.main-footer {
+  margin-top: auto;
+  background-color: white;
+  border-top: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 15px;
+  transition: all var(--transition-base);
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+.footer-section h4 {
+  color: #1e293b;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.footer-section p {
+  margin: 8px 0;
+}
+
+.footer-section a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

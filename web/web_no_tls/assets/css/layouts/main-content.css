@@ -1,0 +1,46 @@
+/**
+  * Main Content Layout Styles
+  */
+
+/* Main Content Area */
+.main-content {
+  margin-left: 250px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 0;
+  position: relative;
+  transition: all var(--transition-base);
+}
+
+.main-content.expanded {
+  margin-left: 70px;
+}
+
+/* Grid Container for Device Cards */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-content: start;
+  flex: 1;
+}
+
+/* Responsive Grid */
+@media (max-width: 1200px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* View Hidden Utility */
+.view-hidden {
+  display: none;
+}

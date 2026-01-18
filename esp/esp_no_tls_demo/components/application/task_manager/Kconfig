@@ -1,0 +1,17 @@
+menu "APPLICATION MANAGER "
+
+    config VERSION_APP
+        string "Application Version"
+        default "1.0"
+        help
+            Version of the application layer.
+
+    config INTERVAL_TIME_MS
+        int "Interval Time (ms)"
+        default 5000
+        help
+            Time interval in milliseconds for periodic tasks.
+
+endmenu
+
+

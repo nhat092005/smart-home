@@ -2,7 +2,10 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    />
     <meta name="description" content="SMART HOME IOT" />
     <meta
       name="author"
@@ -41,13 +44,42 @@
     </noscript>
     <nav class="bottom-nav" id="bottom-nav">
       <div class="nav-menu">
-        <a href="#" class="nav-item active" onclick="switchTab('dashboard')" aria-label="Home">
+        <a
+          href="#"
+          class="nav-item active"
+          onclick="switchTab('dashboard')"
+          aria-label="Home"
+        >
           <i class="fa-solid fa-house" aria-hidden="true"></i>
         </a>
-        <a href="#" class="nav-item" onclick="switchTab('report')" aria-label="Dashboard">
+        <a
+          href="#"
+          class="nav-item"
+          onclick="switchTab('report')"
+          aria-label="Dashboard"
+        >
           <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
         </a>
-        <a href="#" class="nav-item" onclick="switchTab('setting')" aria-label="Settings">
+        <a
+          href="#"
+          class="nav-item"
+          onclick="switchTab('notification')"
+          aria-label="Notifications"
+        >
+          <i class="fa-solid fa-bell" aria-hidden="true"></i>
+          <span
+            class="notification-badge"
+            id="notification-badge"
+            style="display: none"
+            >0</span
+          >
+        </a>
+        <a
+          href="#"
+          class="nav-item"
+          onclick="switchTab('setting')"
+          aria-label="Settings"
+        >
           <i class="fa-solid fa-gear" aria-hidden="true"></i>
         </a>
       </div>
@@ -61,20 +93,34 @@
         <div class="modal-content report-detail-modal-content">
           <div class="modal-header">
             <h3 id="report-title" class="report-detail-title"></h3>
-            <span class="close-button" onclick="closeReportDetail()">&times;</span>
+            <span class="close-button" onclick="closeReportDetail()"
+              >&times;</span
+            >
           </div>
 
           <!-- Stats Row - Compact -->
           <div class="stats-row">
-            <div class="stat-box temp" id="btn-chart-temp" onclick="selectChartType('temp')">
+            <div
+              class="stat-box temp"
+              id="btn-chart-temp"
+              onclick="selectChartType('temp')"
+            >
               <i class="fa-solid fa-temperature-half"></i>
               <span class="stat-value" id="detail-temp">--°C</span>
             </div>
-            <div class="stat-box humid" id="btn-chart-humid" onclick="selectChartType('humid')">
+            <div
+              class="stat-box humid"
+              id="btn-chart-humid"
+              onclick="selectChartType('humid')"
+            >
               <i class="fa-solid fa-droplet"></i>
               <span class="stat-value" id="detail-humid">--%</span>
             </div>
-            <div class="stat-box light" id="btn-chart-light" onclick="selectChartType('light')">
+            <div
+              class="stat-box light"
+              id="btn-chart-light"
+              onclick="selectChartType('light')"
+            >
               <i class="fa-solid fa-sun"></i>
               <span class="stat-value" id="detail-light">--Lux</span>
             </div>
@@ -86,21 +132,33 @@
               <div class="control-item">
                 <i class="fa-solid fa-fan"></i>
                 <label class="switch">
-                  <input type="checkbox" id="toggle-fan" onchange="toggleFeature('fan')" />
+                  <input
+                    type="checkbox"
+                    id="toggle-fan"
+                    onchange="toggleFeature('fan')"
+                  />
                   <span class="slider round"></span>
                 </label>
               </div>
               <div class="control-item">
                 <i class="fa-solid fa-lightbulb"></i>
                 <label class="switch">
-                  <input type="checkbox" id="toggle-lamp" onchange="toggleFeature('lamp')" />
+                  <input
+                    type="checkbox"
+                    id="toggle-lamp"
+                    onchange="toggleFeature('lamp')"
+                  />
                   <span class="slider round"></span>
                 </label>
               </div>
               <div class="control-item">
                 <i class="fa-solid fa-snowflake"></i>
                 <label class="switch">
-                  <input type="checkbox" id="toggle-ac" onchange="toggleFeature('ac')" />
+                  <input
+                    type="checkbox"
+                    id="toggle-ac"
+                    onchange="toggleFeature('ac')"
+                  />
                   <span class="slider round"></span>
                 </label>
               </div>
@@ -110,6 +168,33 @@
           <!-- Chart Section -->
           <div class="chart-section">
             <canvas id="myChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification View -->
+      <div
+        id="notification-view"
+        class="notification-view-container"
+        style="display: none"
+      >
+        <div class="notification-header">
+          <h2 class="notification-title">
+            <i class="fa-solid fa-bell"></i> Notifications
+          </h2>
+          <button
+            class="btn-clear-all"
+            id="btn-clear-notifications"
+            onclick="window.clearAllNotifications()"
+          >
+            <i class="fa-solid fa-trash"></i> Clear All
+          </button>
+        </div>
+
+        <div class="notification-list" id="notification-list">
+          <div class="notification-empty">
+            <i class="fa-regular fa-bell-slash"></i>
+            <p>No notifications yet</p>
           </div>
         </div>
       </div>
@@ -148,6 +233,34 @@
             </table>
           </div>
 
+          <!-- MQTT Configuration Section -->
+          <div class="mqtt-config-section">
+            <div class="mqtt-config-header">
+              <i class="fa-solid fa-server"></i>
+              <span>MQTT Server</span>
+            </div>
+            <div class="mqtt-config-form">
+              <div class="input-group">
+                <div class="input-with-button">
+                  <input
+                    type="text"
+                    id="mqtt-host-input"
+                    placeholder=""
+                    class="mqtt-input"
+                  />
+                  <button
+                    type="button"
+                    id="btn-save-mqtt-host"
+                    class="btn-save-mqtt"
+                    onclick="saveMQTTHost()"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- User Account Section -->
           <div class="account-section">
             <div class="account-header">
@@ -164,9 +277,15 @@
                 <span id="db-status" class="badge warning">Firebase</span>
               </div>
             </div>
-            <button type="button" id="logout-btn" class="btn-logout-full" title="Log Out" aria-label="Log Out">
+            <button
+              type="button"
+              id="logout-btn"
+              class="btn-logout-full"
+              title="Log Out"
+              aria-label="Log Out"
+            >
               <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-              <span>Đăng xuất</span>
+              <span>Log Out</span>
             </button>
           </div>
         </div>
@@ -247,7 +366,6 @@
           </div>
         </div>
       </div>
-
     </main>
     <!-- Add New Device -->
     <div id="add-modal" class="modal modal-center">

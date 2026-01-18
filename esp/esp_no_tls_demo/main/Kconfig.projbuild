@@ -1,0 +1,38 @@
+menu "SMART HOME DEVICE CONFIGURATION"
+    
+    rsource "../components/application/task_manager/Kconfig"
+
+    menu "Communication Layer Configuration"
+    
+    # WiFi Manager Configuration
+    rsource "../components/communication/wifi_manager/Kconfig"
+
+    # MQTT Manager Configuration
+    rsource "../components/communication/mqtt_manager/Kconfig"
+
+    endmenu
+
+    # Hardware Layer Configuration
+    menu "Hardware Layer Configuration"
+
+        # Button Handler Configuration
+        rsource "../components/hardware/button_handler/Kconfig"
+
+        # Device Control Configuration
+        rsource "../components/hardware/device_control/Kconfig"
+
+        # Status LED Configuration
+        rsource "../components/hardware/status_led/Kconfig"
+
+    endmenu
+
+    menu "Hardware Protocol Configuration"
+
+        # I2C Interface Configuration
+        rsource "../components/sensor/i2cdev/Kconfig"
+
+    endmenu
+
+endmenu
+
+

@@ -1,0 +1,177 @@
+/**
+  * Dashboard View Styles
+  */
+
+/* Report View Container */
+.report-view-container {
+  display: none;
+}
+
+.report-view-header {
+  margin-bottom: 20px;
+}
+
+/* Report Grid */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  align-content: start;
+  margin-top: 20px;
+  flex: 1;
+}
+
+.report-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: transform var(--transition-fast);
+  cursor: pointer;
+  max-height: fit-content;
+}
+
+.report-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Report Detail Panel */
+.report-detail-panel {
+  background: white;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.detail-header-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Stats Row - Temperature, Humidity, Light */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: white;
+  padding: 15px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.stat-box:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-box.active-chart {
+  background-color: #f1f5f9;
+  border: 2px solid #334155;
+  transform: scale(1.02);
+}
+
+.stat-box.main-power {
+  border-left: 4px solid var(--danger-color);
+}
+
+.stat-box.temp {
+  border-left: 4px solid var(--temp-color);
+}
+
+.stat-box.humid {
+  border-left: 4px solid var(--humid-color);
+}
+
+.stat-box.light {
+  border-left: 4px solid var(--light-color);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.stat-info span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.stat-info h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+/* Chart Control Wrapper */
+.chart-control-wrapper {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 20px;
+  height: 400px;
+}
+
+.chart-section {
+  background: white;
+  padding: 15px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+}
+
+.control-section {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.control-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.control-label {
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}

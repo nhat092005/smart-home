@@ -1,0 +1,46 @@
+menu "MQTT Manager Configuration"
+
+    config MQTT_BASE_TOPIC
+        string "Base Topic"
+        default "SmartHome"
+        help
+            Base topic for all MQTT messages.
+            Topics will be: {base}/...
+
+    config MQTT_DEVICE_ID
+        string "Device ID"
+        default "esp_01"
+        help
+            Topics will be: {base}/{device_id}/...
+
+    config MQTT_BROKER_URI
+        string "MQTT Broker URI"
+        default "raspberrypi.local"
+        help
+            URI of the MQTT broker to connect to.
+
+    config MQTT_BROKER_PORT
+        int "MQTT Broker Port"
+        default 1883
+        help
+            Port number for the MQTT broker connection (1883 for non-TLS, 8883 for TLS).
+
+    config MQTT_USERNAME
+        string "MQTT Username"
+        default ""
+        help
+            MQTT broker username (leave empty if not required)
+
+    config MQTT_PASSWORD
+        string "MQTT Password"
+        default ""
+        help
+            MQTT broker password (leave empty if not required)
+
+    config MQTT_KEEP_ALIVE_SEC
+        int "MQTT Keep Alive (seconds)"
+        default 120
+        help
+            Keep alive interval in seconds for MQTT connection.
+
+endmenu

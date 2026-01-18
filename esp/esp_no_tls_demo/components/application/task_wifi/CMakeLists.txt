@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+    "task_wifi.c"
+    INCLUDE_DIRS
+    "include"
+    REQUIRES
+    task_manager
+    wifi_manager
+    mqtt_manager
+)

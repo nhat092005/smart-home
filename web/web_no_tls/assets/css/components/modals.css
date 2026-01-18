@@ -1,0 +1,393 @@
+/**
+  * Modal Component Styles
+  */
+
+/* Base Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: var(--z-modal-backdrop);
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  padding: 25px;
+  border: none;
+  width: 400px;
+  max-width: 90%;
+  border-radius: var(--radius-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Modal Close Buttons */
+.modal .close,
+.modal .closeBtn,
+.modal .close-button {
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 25px;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.modal .close:hover,
+.modal .closeBtn:hover,
+.modal .close-button:hover {
+  color: var(--danger-color);
+}
+
+/* WiFi Guide Modal */
+.wifi-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: var(--z-modal);
+  overflow: auto;
+}
+
+.wifi-modal-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.wifi-modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: var(--radius-xl);
+  max-width: 550px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+}
+
+/* Popup Close Button - Standardized */
+.popup-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+  z-index: 10;
+}
+
+.popup-close-btn:hover {
+  color: #333;
+}
+
+.wifi-modal-title {
+  margin: 0 0 20px 0;
+  color: var(--warning-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wifi-modal-body {
+  color: #78350f;
+}
+
+/* WiFi Guide Styles */
+.wifi-guide-title {
+  margin: 0 0 15px 0;
+  color: #92400e;
+}
+
+.wifi-guide-step {
+  background: #fef9f3;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #fbbf24;
+}
+
+.wifi-guide-step strong {
+  color: #92400e;
+}
+
+.wifi-guide-step ol {
+  margin: 10px 0 0 20px;
+  padding: 0;
+}
+
+.wifi-guide-step li {
+  margin: 5px 0;
+}
+
+.wifi-guide-code {
+  background: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #c2410c;
+}
+
+.wifi-guide-step p {
+  margin: 10px 0;
+}
+
+.wifi-guide-link-wrapper {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.wifi-guide-link {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #f59e0b;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.wifi-guide-link:hover {
+  background: #d97706;
+}
+
+.wifi-guide-success {
+  background: #dcfce7;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #86efac;
+}
+
+.wifi-guide-success strong {
+  color: #166534;
+}
+
+.wifi-guide-success p {
+  margin: 10px 0 0 0;
+  color: #166534;
+}
+
+.modal-actions-right {
+  margin-top: 20px;
+  text-align: right;
+}
+
+/* Manual Time Modal */
+.time-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: var(--z-modal);
+  overflow: auto;
+}
+
+.time-modal-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.time-modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: var(--radius-xl);
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+}
+
+.time-modal-title {
+  margin: 0 0 20px 0;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-input-group {
+  margin-bottom: 20px;
+}
+
+.time-input-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.time-input-field {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.time-preview-box {
+  padding: 12px;
+  background: #f3f4f6;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.time-preview-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.time-preview-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.time-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.time-modal-actions button {
+  flex: 1;
+  padding: 12px 20px;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Report Detail Modal */
+.report-detail-modal-content {
+  margin-top: 50px;
+  width: 95%;
+  max-width: 1000px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.report-detail-title {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+/* Close button X - Positioning */
+.modal-content .close,
+.modal-content .closeBtn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  z-index: 10;
+}
+
+.modal-content .close:hover,
+.modal-content .closeBtn:hover {
+  color: #333;
+}
+
+/* Modal content relative positioning for close button */
+.modal .modal-content {
+  position: relative;
+}
+
+/* Modal Button Utilities */
+.btn-modal-close {
+  padding: 12px 24px;
+  background: var(--text-secondary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-modal-apply {
+  background: var(--success-color) !important;
+}
+
+.btn-modal-sync {
+  background: var(--info-color) !important;
+}
+
+/* Modal Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+}
+
+.form-group small {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Modal Actions Layout */
+.modal-actions-flex {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Input Disabled State */
+.input-disabled {
+  background: #f0f0f0 !important;
+  color: #666 !important;
+}
+
+/* Modal Header with Close Button */
+.modal-header-close {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+/* Modal Actions Row */
+.modal-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Button Flex Fill */
+.btn-flex-fill {
+  flex: 1;
+}

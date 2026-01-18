@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Home - Sign In</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="login-page">
+    <div class="auth-container">
+      <h2 id="form-title">Sign In</h2>
+
+      <div id="error-message"></div>
+
+      <form id="auth-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <input
+          type="password"
+          id="confirm-password"
+          placeholder="Confirm Password"
+          class="hidden"
+        />
+        <button type="submit" id="submit-btn">Sign In</button>
+      </form>
+
+      <p class="toggle-text">
+        <span id="toggle-msg">Don't have an account?</span>
+        <a id="toggle-btn">Sign Up Now</a>
+      </p>
+    </div>
+
+    <!-- Load login script module -->
+    <script type="module" src="assets/js/core/login.js"></script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+/**
+  * Settings View Styles
+  */
+
+/* Settings View Container */
+.settings-view-container {
+  display: none;
+}
+
+.settings-card {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+}
+
+/* Clock Display */
+.clock-display {
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border: 2px solid #1e293b;
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+
+.clock-date {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 5px;
+}
+
+.clock-time {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 2px;
+}
+
+/* Device Info Table Container */
+.device-table-container {
+  overflow-x: auto;
+}
+
+/* Offline IP Cell */
+.device-ip-cell.offline-ip {
+  color: var(--danger-color, #ef4444);
+  font-weight: 600;
+}

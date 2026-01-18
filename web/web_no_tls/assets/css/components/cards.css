@@ -1,0 +1,183 @@
+/**
+  * Card Component Styles
+  */
+
+/* Base Card Styles */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: transform var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.card-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Device Card Badges */
+.device-id {
+  font-size: 0.75rem;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+
+.interval-badge {
+  font-size: 0.75rem;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+
+/* Metrics Section */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 15px 0;
+  background-color: #f8fafc;
+  padding: 15px;
+  border-radius: var(--radius-md);
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.metric-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Card Actions */
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.card-actions.single-button {
+  grid-template-columns: 1fr;
+}
+
+/* Add Card */
+.add-card {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.dashed-border {
+  border: 2px dashed var(--border-medium);
+  border-radius: var(--radius-lg);
+  height: 100%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.5);
+  transition: var(--transition-fast);
+}
+
+.add-card:hover .dashed-border {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: #eff6ff;
+}
+
+.add-card i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+/* Card Header Sub-info */
+.card-header-left-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.card-header-right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Device Status Indicator (Online/Offline) */
+.device-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.device-status .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.device-status.online .status-dot {
+  background-color: var(--success-color, #22c55e);
+  box-shadow: 0 0 6px var(--success-color, #22c55e);
+}
+
+.device-status.online .status-text {
+  color: var(--success-color, #22c55e);
+}
+
+.device-status.offline .status-dot {
+  background-color: var(--danger-color, #ef4444);
+  box-shadow: 0 0 6px var(--danger-color, #ef4444);
+}
+
+.device-status.offline .status-text {
+  color: var(--danger-color, #ef4444);
+}
+
+.card-wifi-info {
+  font-size: 0.85rem;
+  color: #1e293b;
+  font-weight: 500;
+}

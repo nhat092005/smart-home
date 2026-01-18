@@ -1,0 +1,12 @@
+idf_component_register(
+    SRCS
+    "task_button.c"
+    INCLUDE_DIRS
+    "include"
+    REQUIRES
+    button_handler
+    device_control
+    mode_manager
+    wifi_manager
+    task_manager
+)

@@ -1,0 +1,26 @@
+/**
+  * Main Stylesheet
+  * This file imports all other CSS files in a structured manner.
+  */
+
+/* Base Styles - Foundation */
+@import url("base/variables.css");
+@import url("base/reset.css");
+
+/* Layout Components - Structure */
+@import url("layouts/sidebar.css");
+@import url("layouts/header.css");
+@import url("layouts/main-content.css");
+@import url("layouts/footer.css");
+
+/* UI Components - Reusable Elements */
+@import url("components/buttons.css");
+@import url("components/cards.css");
+@import url("components/badges.css");
+@import url("components/modals.css");
+
+/* View Specific Styles - Page Layouts */
+@import url("views/login.css");
+@import url("views/dashboard.css");
+@import url("views/settings.css");
+@import url("views/export.css");

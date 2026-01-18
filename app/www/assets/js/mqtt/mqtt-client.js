@@ -4,13 +4,71 @@
  * Handles MQTT connection, reconnection, and message publishing
  */
 
+import { resolveHostnameWithCache } from '../core/mdns-resolver.js';
+
 // MQTT configuration constants
 export const MQTT_TOPICS = {
     DATA: 'data',       //!< Sensor data topic
     STATE: 'state',     //!< Device state topic
     INFO: 'info',       //!< Device info topic
-    COMMAND: 'command'  //!< Command topic
+    COMMAND: 'command', //!< Command topic
+    RESPONSE: 'response' //!< Response topic for command acknowledgment
 };
+
+// Pending commands waiting for response
+const pendingCommands = new Map();
+
+/**
+ * Register a pending command callback
+ * @param {string} cmdId - Command ID
+ * @param {Object} callbacks - { onSuccess, onError, timeout }
+ */
+export function registerCommandCallback(cmdId, callbacks) {
+    const { onSuccess, onError, timeout = 5000 } = callbacks;
+
+    // Set timeout to auto-reject
+    const timeoutId = setTimeout(() => {
+        if (pendingCommands.has(cmdId)) {
+            pendingCommands.delete(cmdId);
+            if (onError) onError('timeout');
+            console.warn(`[MQTT] Command ${cmdId} timed out`);
+        }
+    }, timeout);
+
+    pendingCommands.set(cmdId, {
+        onSuccess,
+        onError,
+        timeoutId
+    });
+}
+
+/**
+ * Handle response message and resolve pending command
+ * @param {string} cmdId - Command ID from response
+ * @param {string} status - 'success' or 'error'
+ */
+export function handleCommandResponse(cmdId, status) {
+    console.log(`[MQTT] handleCommandResponse('${cmdId}', '${status}')`);
+    console.log('[MQTT] Pending commands:', Array.from(pendingCommands.keys()));
+
+    const pending = pendingCommands.get(cmdId);
+    if (!pending) {
+        console.warn(`[MQTT] No pending command found for ${cmdId}`);
+        return;
+    }
+
+    console.log(`[MQTT] Found pending command for ${cmdId}, clearing timeout`);
+    clearTimeout(pending.timeoutId);
+    pendingCommands.delete(cmdId);
+
+    if (status === 'success') {
+        console.log(`[MQTT] Calling onSuccess for ${cmdId}`);
+        if (pending.onSuccess) pending.onSuccess();
+    } else {
+        console.log(`[MQTT] Calling onError for ${cmdId}`);
+        if (pending.onError) pending.onError(status);
+    }
+}
 
 const RETRY_CONFIG = {
     MQTT_RETRY_DELAY: 5000, //!< 5 seconds between reconnection attempts
@@ -47,12 +105,12 @@ function loadMQTTConfig() {
         }
     }
 
-    // Default configuration - HiveMQ Cloud
+    // Default configuration - Local Mosquitto Broker (No TLS)
     return {
-        host: "6ceea111b6144c71a57b21faa3553fc6.s1.eu.hivemq.cloud",
-        port: 8884,
+        host: "raspberrypi.local",  // mDNS hostname will be resolved automatically
+        port: 8083,                  // WebSocket port (non-TLS)
         path: "/mqtt",
-        useSSL: true,
+        useSSL: false,               // Disable SSL/TLS
         username: "SmartHome",
         password: "SmartHome01",
         keepalive: 60,
@@ -75,11 +133,23 @@ function generateClientId() {
  * @param {Function} onConnectionLost - Callback when connection lost
  * @returns {Object} MQTT client instance
  */
-export function initializeMQTTClient(onConnect, onMessage, onConnectionLost) {
+export async function initializeMQTTClient(onConnect, onMessage, onConnectionLost) {
     const config = loadMQTTConfig();
 
+    // Resolve hostname if it's a .local address (mDNS)
+    let resolvedHost = config.host;
+    if (config.host.endsWith('.local')) {
+        try {
+            console.log('[MQTT] Resolving mDNS hostname:', config.host);
+            resolvedHost = await resolveHostnameWithCache(config.host);
+            console.log('[MQTT] Resolved to:', resolvedHost);
+        } catch (error) {
+            console.warn('[MQTT] Failed to resolve hostname, using as-is:', error);
+        }
+    }
+
     mqttClient = new Paho.MQTT.Client(
-        config.host,
+        resolvedHost,
         Number(config.port),
         config.path,
         config.clientId
@@ -162,7 +232,8 @@ export function subscribeToDevice(deviceId) {
     const topics = [
         `SmartHome/${deviceId}/${MQTT_TOPICS.DATA}`,
         `SmartHome/${deviceId}/${MQTT_TOPICS.STATE}`,
-        `SmartHome/${deviceId}/${MQTT_TOPICS.INFO}`
+        `SmartHome/${deviceId}/${MQTT_TOPICS.INFO}`,
+        `SmartHome/${deviceId}/${MQTT_TOPICS.RESPONSE}`
     ];
 
     topics.forEach(topic => {
@@ -182,19 +253,22 @@ export function subscribeToDevice(deviceId) {
  * @param {string} deviceId - Device identifier
  * @param {string} command - Command name
  * @param {Object} params - Command parameters
- * @returns {boolean} Success status
+ * @param {Object} callbacks - Optional callbacks { onSuccess, onError, timeout }
+ * @returns {string|boolean} Command ID if successful with callbacks, true if sent without callbacks, false if failed
  */
-export function sendMQTTCommand(deviceId, command, params) {
+export function sendMQTTCommand(deviceId, command, params, callbacks = null) {
     if (!mqttClient || !mqttClient.isConnected()) {
         console.error('[MQTT] Client not connected');
+        if (callbacks?.onError) callbacks.onError('not_connected');
         return false;
     }
 
     const topic = `SmartHome/${deviceId}/${MQTT_TOPICS.COMMAND}`;
     commandCounter++;
 
+    const cmdId = `cmd_${commandCounter.toString().padStart(3, '0')}`;
     const payload = {
-        id: `cmd_${commandCounter.toString().padStart(3, '0')}`,
+        id: cmdId,
         command: command,
         params: params
     };
@@ -203,10 +277,18 @@ export function sendMQTTCommand(deviceId, command, params) {
         const message = new Paho.MQTT.Message(JSON.stringify(payload));
         message.destinationName = topic;
         mqttClient.send(message);
-        console.log(`[MQTT] Sent ${command} to ${deviceId}`);
+        console.log(`[MQTT] Sent ${command} to ${deviceId} (${cmdId})`);
+
+        // Register callback if provided
+        if (callbacks) {
+            registerCommandCallback(cmdId, callbacks);
+            return cmdId;
+        }
+
         return true;
     } catch (error) {
         console.error(`[MQTT] Failed to send ${command} to ${deviceId}:`, error);
+        if (callbacks?.onError) callbacks.onError('send_failed');
         return false;
     }
 }

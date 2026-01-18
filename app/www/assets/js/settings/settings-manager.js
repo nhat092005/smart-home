@@ -25,6 +25,9 @@ export function initializeSettings() {
 
     // Load device info table
     loadDeviceInfoTable();
+    
+    // Load MQTT host configuration
+    loadMQTTHostDisplay();
 }
 
 /**
@@ -381,4 +384,88 @@ function escapeHtml(unsafe) {
  */
 export function cleanupSettings() {
     stopClock();
+}
+
+/**
+ * Load and display current MQTT host configuration
+ */
+export function loadMQTTHostDisplay() {
+    const savedConfig = localStorage.getItem('mqtt_config');
+    const currentHostDisplay = document.getElementById('current-mqtt-host');
+    const hostInput = document.getElementById('mqtt-host-input');
+    
+    if (savedConfig) {
+        try {
+            const config = JSON.parse(savedConfig);
+            const host = config.host || 'raspberrypi.local';
+            if (currentHostDisplay) {
+                currentHostDisplay.textContent = host;
+            }
+            if (hostInput) {
+                hostInput.value = host;
+            }
+        } catch (error) {
+            console.error('[Settings] Error loading MQTT config:', error);
+            if (currentHostDisplay) {
+                currentHostDisplay.textContent = 'raspberrypi.local';
+            }
+        }
+    } else {
+        // Default value
+        if (currentHostDisplay) {
+            currentHostDisplay.textContent = 'raspberrypi.local';
+        }
+        if (hostInput) {
+            hostInput.value = 'raspberrypi.local';
+        }
+    }
+}
+
+/**
+ * Save MQTT host configuration
+ */
+export function saveMQTTHost() {
+    const hostInput = document.getElementById('mqtt-host-input');
+    const newHost = hostInput?.value?.trim();
+    
+    if (!newHost) {
+        alert('Please enter a valid hostname or IP address');
+        return;
+    }
+    
+    // Get existing config or create default
+    let config = {
+        host: newHost,
+        port: 8083,
+        path: '/mqtt',
+        useSSL: false,
+        username: 'SmartHome',
+        password: 'SmartHome01',
+        keepalive: 60
+    };
+    
+    // Try to merge with existing config
+    const savedConfig = localStorage.getItem('mqtt_config');
+    if (savedConfig) {
+        try {
+            const existing = JSON.parse(savedConfig);
+            config = { ...existing, host: newHost };
+        } catch (error) {
+            console.error('[Settings] Error parsing existing config:', error);
+        }
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('mqtt_config', JSON.stringify(config));
+    
+    // Update display
+    const currentHostDisplay = document.getElementById('current-mqtt-host');
+    if (currentHostDisplay) {
+        currentHostDisplay.textContent = newHost;
+    }
+    
+    // Show success message
+    alert(`MQTT host updated to: ${newHost}\n\nPlease restart the app or logout and login again to apply changes.`);
+    
+    console.log('[Settings] MQTT host saved:', newHost);
 }

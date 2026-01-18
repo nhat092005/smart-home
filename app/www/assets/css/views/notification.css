@@ -1,0 +1,241 @@
+/**
+ * Notification View Styles
+ */
+
+/* Notification View Container */
+.notification-view-container {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Notification Header */
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.notification-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notification-title i {
+  color: var(--primary-color);
+}
+
+.btn-clear-all {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-all:hover {
+  background: #fecaca;
+}
+
+.btn-clear-all:active {
+  transform: scale(0.95);
+}
+
+/* Notification List */
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Empty State */
+.notification-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.notification-empty i {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.notification-empty p {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Notification Item */
+.notification-item {
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  display: flex;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.notification-item.unread {
+  border-left: 3px solid var(--primary-color);
+  background: #f0f9ff;
+}
+
+/* Notification Icon */
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.notification-icon.info {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.notification-icon.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.notification-icon.success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.notification-icon.error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.notification-icon.device {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+/* Notification Content */
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-text {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.notification-text strong {
+  font-weight: 600;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Notification Actions */
+.notification-actions {
+  display: flex;
+  align-items: flex-start;
+}
+
+.btn-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-dismiss:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Notification Badge in Nav */
+.nav-item {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Notification Type Specific */
+.notification-item.device-online .notification-text::before {
+  content: "🟢 ";
+}
+
+.notification-item.device-offline .notification-text::before {
+  content: "🔴 ";
+}
+
+/* Loading State */
+.notification-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.notification-loading i {
+  margin-right: 8px;
+}

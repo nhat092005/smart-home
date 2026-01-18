@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WiFi Setup</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>WiFi Configuration</h1>
+        <p>Connect your device to wireless network</p>
+      </div>
+
+      <div id="status-message" class="status-message">
+        <span id="status-text">Ready</span>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <h2>Available Networks</h2>
+          <button onclick="scanNetworks()" class="btn-scan" id="scan-btn">
+            Scan
+          </button>
+        </div>
+
+        <div id="network-list" class="network-list">
+          <div class="loading-text">Click Scan to discover networks</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Network Credentials</h2>
+
+        <form id="wifi-form" onsubmit="submitForm(event)">
+          <div class="form-group">
+            <label for="ssid">Network Name (SSID)</label>
+            <input
+              type="text"
+              id="ssid"
+              placeholder="Select or enter SSID"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-group">
+              <input
+                type="password"
+                id="password"
+                placeholder="Enter password"
+              />
+              <button
+                type="button"
+                onclick="togglePassword()"
+                class="btn-toggle"
+                id="toggle-btn"
+              >
+                Show
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="connect-btn">
+            Connect
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

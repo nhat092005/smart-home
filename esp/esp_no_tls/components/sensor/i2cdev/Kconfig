@@ -1,0 +1,43 @@
+menu "I2C Device Configuration"
+
+    config I2C_MASTER_SDA_PIN
+        int "I2C Master SDA GPIO"
+        range 0 48
+        default 21
+        help
+            GPIO pin number for I2C SDA (data line).
+
+    config I2C_MASTER_SCL_PIN
+        int "I2C Master SCL GPIO"
+        range 0 48
+        default 22
+        help
+            GPIO pin number for I2C SCL (clock line).
+
+    config I2C_MASTER_FREQ_HZ
+        int "I2C Master Clock Frequency (Hz)"
+        default 100000
+        help
+            I2C master clock frequency in Hz.
+            Common values: 100000 (standard mode), 400000 (fast mode).
+
+    config I2C_MASTER_PORT
+        int "I2C Master Port Number"
+        range 0 1
+        default 0
+        help
+            I2C port number (0 or 1).
+
+    config I2CDEV_TIMEOUT_MS
+        int "I2C Transaction Timeout (ms)"
+        default 1000
+        help
+            Timeout for I2C transactions in milliseconds.
+
+    config I2CDEV_DEBUG
+        bool "Enable I2C Debug Logging"
+        default n
+        help
+            Enable detailed debug logging for I2C transactions.
+
+endmenu

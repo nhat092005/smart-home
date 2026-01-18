@@ -1,0 +1,34 @@
+/**
+  * Badges Component Styles
+  */
+
+/* Base Badge Styles */
+.badge {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* Badge Variants */
+.badge.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Badges Container */
+.badges {
+  display: flex;
+  gap: 10px;
+}

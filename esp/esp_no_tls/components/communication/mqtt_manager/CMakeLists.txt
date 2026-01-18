@@ -1,0 +1,12 @@
+idf_component_register(
+    SRCS
+    "mqtt_manager.c"
+    INCLUDE_DIRS
+    "include"
+    REQUIRES
+    mqtt
+    json_helper
+    esp_wifi
+    esp_netif
+    esp_timer
+)

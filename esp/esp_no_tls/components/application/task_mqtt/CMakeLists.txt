@@ -1,0 +1,16 @@
+idf_component_register(
+    SRCS
+    "task_mqtt.c"
+    INCLUDE_DIRS 
+    "include"
+    REQUIRES
+    mqtt_manager
+    mqtt_callback
+    json_helper
+    shared_sensor
+    device_control
+    mode_manager
+    sensor_manager
+    wifi_manager
+    task_manager
+)

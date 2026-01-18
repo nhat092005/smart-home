@@ -2,6 +2,12 @@
   "appId": "com.smarthome.app",
   "appName": "SMART HOME",
   "webDir": "www",
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "http",
+    "iosScheme": "capacitor",
+    "cleartext": true
+  },
   "plugins": {
     "StatusBar": {
       "overlaysWebView": true,
@@ -10,6 +16,8 @@
     }
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "useLegacyBridge": false,
+    "backgroundColor": "#1e293b"
   }
 }
