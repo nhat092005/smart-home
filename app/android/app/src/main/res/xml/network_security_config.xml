@@ -3,7 +3,8 @@
     <!-- Allow cleartext traffic for MQTT WebSocket connections -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">raspberrypi.local</domain>
-        <domain includeSubdomains="true">10.247.50.166</domain>
+        <domain includeSubdomains="true">10.121.225.166</domain>
+        <domain includeSubdomains="true">10.213.228.166</domain>
         <domain includeSubdomains="true">192.168.1.1</domain>
         <domain includeSubdomains="true">192.168.0.1</domain>
         <domain includeSubdomains="true">192.168.43.1</domain>

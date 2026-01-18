@@ -25,7 +25,7 @@ const pendingCommands = new Map();
  */
 export function registerCommandCallback(cmdId, callbacks) {
     const { onSuccess, onError, timeout = 5000 } = callbacks;
-    
+
     // Set timeout to auto-reject
     const timeoutId = setTimeout(() => {
         if (pendingCommands.has(cmdId)) {
@@ -34,7 +34,7 @@ export function registerCommandCallback(cmdId, callbacks) {
             console.warn(`[MQTT] Command ${cmdId} timed out`);
         }
     }, timeout);
-    
+
     pendingCommands.set(cmdId, {
         onSuccess,
         onError,
@@ -50,17 +50,17 @@ export function registerCommandCallback(cmdId, callbacks) {
 export function handleCommandResponse(cmdId, status) {
     console.log(`[MQTT] handleCommandResponse('${cmdId}', '${status}')`);
     console.log('[MQTT] Pending commands:', Array.from(pendingCommands.keys()));
-    
+
     const pending = pendingCommands.get(cmdId);
     if (!pending) {
         console.warn(`[MQTT] No pending command found for ${cmdId}`);
         return;
     }
-    
+
     console.log(`[MQTT] Found pending command for ${cmdId}, clearing timeout`);
     clearTimeout(pending.timeoutId);
     pendingCommands.delete(cmdId);
-    
+
     if (status === 'success') {
         console.log(`[MQTT] Calling onSuccess for ${cmdId}`);
         if (pending.onSuccess) pending.onSuccess();
@@ -278,13 +278,13 @@ export function sendMQTTCommand(deviceId, command, params, callbacks = null) {
         message.destinationName = topic;
         mqttClient.send(message);
         console.log(`[MQTT] Sent ${command} to ${deviceId} (${cmdId})`);
-        
+
         // Register callback if provided
         if (callbacks) {
             registerCommandCallback(cmdId, callbacks);
             return cmdId;
         }
-        
+
         return true;
     } catch (error) {
         console.error(`[MQTT] Failed to send ${command} to ${deviceId}:`, error);
