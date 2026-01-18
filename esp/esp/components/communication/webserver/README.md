@@ -1,8 +1,146 @@
-# Web Server
+# Webserver Module
 
 ## Overview
 
-The Web Server component provides an HTTP server for WiFi provisioning in the ESP32 Smart Home system. It serves an embedded web interface that allows users to scan for WiFi networks, enter credentials, and configure the device. The server uses ESP-IDF HTTP server with embedded static files (HTML, CSS, JavaScript).
+HTTP server providing WiFi provisioning interface. Serves embedded web pages for network scanning, credential configuration, and device setup.
+
+## Features
+
+- HTTP server on configurable port
+- Embedded static files (HTML, CSS, JavaScript)
+- WiFi network scanning API
+- Credential configuration endpoint
+- Status monitoring endpoint
+- Reset credentials endpoint
+- JSON API responses
+- Integration with WiFi Manager
+
+## API Functions
+
+```c
+esp_err_t webserver_start(void);
+esp_err_t webserver_stop(void);
+```
+
+## REST API Endpoints
+
+### GET /
+
+Serves the main HTML configuration page.
+
+**Response:** HTML content
+
+### GET /style.css
+
+Serves the CSS stylesheet.
+
+**Response:** CSS content
+
+### GET /script.js
+
+Serves the JavaScript file.
+
+**Response:** JavaScript content
+
+### GET /scan
+
+Scans for available WiFi networks.
+
+**Response:**
+```json
+{
+    "networks": [
+        {
+            "ssid": "MyNetwork",
+            "rssi": -45,
+            "auth": 3
+        }
+    ]
+}
+```
+
+### POST /connect
+
+Configures WiFi credentials and connects.
+
+**Request:**
+```json
+{
+    "ssid": "MyNetwork",
+    "password": "MyPassword"
+}
+```
+
+**Response:**
+```json
+{
+    "status": "success",
+    "message": "Connecting to WiFi..."
+}
+```
+
+### GET /status
+
+Returns current WiFi connection status.
+
+**Response:**
+```json
+{
+    "connected": true,
+    "provisioned": true,
+    "ip": "192.168.1.100",
+    "rssi": -45
+}
+```
+
+### POST /reset
+
+Clears saved WiFi credentials.
+
+**Response:**
+```json
+{
+    "status": "success",
+    "message": "Credentials cleared"
+}
+```
+
+## Usage Example
+
+```c
+#include "webserver.h"
+#include "wifi_manager.h"
+
+// Start provisioning mode
+wifi_manager_start_provisioning();
+webserver_start();
+
+// Server is now running on http://192.168.4.1:80
+// Wait for user configuration
+
+// After successful configuration
+webserver_stop();
+wifi_manager_stop_provisioning();
+```
+
+## Embedded Files
+
+Static files are embedded during build using CMake:
+
+- index.html: Main configuration page
+- style.css: Page styling
+- script.js: Client-side logic
+
+## Configuration
+
+HTTP server port configurable via Kconfig:
+- HTTP_SERVER_PORT: Default 80
+
+## Dependencies
+
+- ESP-IDF HTTP server
+- wifi_manager component
+- utilities/json_helper
 
 ## Features
 

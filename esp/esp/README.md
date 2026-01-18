@@ -2,17 +2,20 @@
 
 ## Overview
 
-IoT-based Smart Home system built on ESP32 using ESP-IDF framework. Features WiFi provisioning, MQTT communication over SSL, sensor monitoring, device control, and OLED display interface.
+Production-ready IoT Smart Home system built on ESP32 using ESP-IDF v5.x framework. Implements secure WiFi provisioning, MQTT over SSL/TLS communication, environmental monitoring, device control, and real-time display interface with comprehensive task management architecture.
 
 ## Features
 
-- WiFi station mode with captive portal provisioning
-- MQTT over SSL for secure IoT communication
-- Environmental monitoring (temperature, humidity, light)
-- Device control (fan, light, AC) via buttons and MQTT commands
-- OLED display with real-time clock
-- Status LED indicators
-- NVS persistence for settings
+- WiFi station mode with captive portal fallback
+- MQTT over SSL/TLS for secure communication (port 8883)
+- Environmental monitoring: temperature, humidity, light intensity
+- Device control: 3 relay outputs (fan, light, AC)
+- Real-time clock with DS3231
+- 128x64 OLED display interface
+- 5 button inputs with debouncing
+- 3-color status LED indicators
+- NVS persistence for configuration
+- FreeRTOS multi-task architecture
 
 ## Hardware Requirements
 

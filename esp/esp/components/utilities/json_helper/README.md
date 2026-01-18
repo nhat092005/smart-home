@@ -1,16 +1,17 @@
-# JSON Helper
+# JSON Helper Module
 
-Safe JSON parsing and creation utilities for MQTT communication.
+## Overview
+
+Type-safe JSON manipulation utilities for creating and parsing MQTT message payloads in the Smart Home system.
 
 ## Features
 
-- Safe value extraction with default fallback
-- Sensor data JSON creation
-- Device state JSON creation
-- WiFi scan result formatting
-- Command parsing for MQTT messages
+- Safe JSON value extraction with default fallbacks
+- MQTT message payload generation for sensor data, device state, and system info
+- Null pointer checking and type validation
+- Automatic memory management helpers
 
-## API Reference
+## API Functions
 
 ### Value Extraction
 
@@ -21,31 +22,42 @@ int json_helper_get_int(cJSON *object, const char *key, int default_val);
 bool json_helper_get_bool(cJSON *object, const char *key, bool default_val);
 ```
 
-### JSON Creation
-
-| Function | Purpose | Format |
-|----------|---------|--------|
-| `json_helper_create_data()` | Sensor readings | `{"timestamp", "temperature", "humidity", "light"}` |
-| `json_helper_create_state()` | Device state | `{"timestamp", "mode", "interval", "fan", "light", "ac"}` |
-| `json_helper_create_info()` | Device info | `{"timestamp", "id", "ssid", "ip", "broker", "firmware"}` |
-| `json_helper_create_wifi_status()` | WiFi status | `{"connected", "provisioned", "ip", "rssi"}` |
-| `json_helper_create_simple_response()` | Generic response | `{"status", "message"}` |
-
-### Parsing Functions
+### Message Creation
 
 ```c
-cJSON *json_helper_parse_command(const char *json_str, char *cmd_id, size_t cmd_id_len,
-                                 char *command, size_t command_len);
-esp_err_t json_helper_parse_wifi_credentials(const char *json_str,
-                                             char *ssid_out, size_t ssid_len,
-                                             char *password_out, size_t password_len);
-char *json_helper_create_wifi_scan_result(const void *ap_list, uint16_t ap_count);
+char *json_helper_create_data(uint32_t timestamp, float temperature, float humidity, int light);
+char *json_helper_create_state(uint32_t timestamp, int mode, int interval, int fan, int light, int ac);
+char *json_helper_create_info(uint32_t timestamp, const char *device_id, const char *ssid, 
+                               const char *ip, const char *broker);
 ```
 
 ## Usage Example
 
 ```c
 #include "json_helper.h"
+
+// Create sensor data JSON
+char *json_str = json_helper_create_data(1700000000, 25.5, 60.3, 450);
+// Result: {"timestamp":1700000000,"temperature":25.5,"humidity":60.3,"light":450}
+
+// Parse JSON safely
+cJSON *root = cJSON_Parse(received_json);
+int mode = json_helper_get_int(root, "mode", 0);
+bool fan_state = json_helper_get_bool(root, "fan", false);
+
+// Clean up
+free(json_str);
+cJSON_Delete(root);
+```
+
+## Memory Management
+
+All `json_helper_create_*` functions return dynamically allocated strings. Caller must free the returned string using `free()`.
+
+## Dependencies
+
+- ESP-IDF cJSON library
+- ESP-IDF logging (esp_log)
 
 // Create sensor data JSON
 char *json = json_helper_create_data(timestamp, 25.5f, 60.0f, 500);

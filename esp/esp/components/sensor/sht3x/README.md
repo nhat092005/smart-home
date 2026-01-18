@@ -1,6 +1,98 @@
 # SHT3x Temperature and Humidity Sensor Driver
 
-Sensirion SHT3x series sensor driver for ESP32.
+## Overview
+
+Driver for Sensirion SHT3x series high-accuracy digital temperature and humidity sensors with I2C interface.
+
+## Features
+
+- Single-shot and periodic measurement modes
+- Three repeatability levels for accuracy/speed tradeoff
+- Measurement rates from 0.5 to 10 readings per second
+- Built-in CRC checksum validation
+- Integrated heater for condensation removal
+- Thread-safe operations with mutex protection
+
+## Hardware Specifications
+
+- Temperature range: -40°C to +125°C
+- Humidity range: 0% to 100% RH
+- Temperature accuracy: ±0.2°C
+- Humidity accuracy: ±2% RH
+- I2C addresses: 0x44 (ADDR pin low), 0x45 (ADDR pin high)
+- Supply voltage: 2.4V - 5.5V
+
+## API Functions
+
+### Initialization
+
+```c
+esp_err_t sht3x_init_desc(sht3x_t *dev, uint8_t addr, i2c_port_t port, 
+                          gpio_num_t sda_gpio, gpio_num_t scl_gpio);
+esp_err_t sht3x_free_desc(sht3x_t *dev);
+esp_err_t sht3x_init(sht3x_t *dev);
+```
+
+### Measurement
+
+```c
+esp_err_t sht3x_measure(sht3x_t *dev, float *temperature, float *humidity);
+esp_err_t sht3x_start_measurement(sht3x_t *dev, sht3x_mode_t mode, sht3x_repeat_t repeat);
+esp_err_t sht3x_get_results(sht3x_t *dev, float *temperature, float *humidity);
+```
+
+### Heater Control
+
+```c
+esp_err_t sht3x_enable_heater(sht3x_t *dev, bool enable);
+esp_err_t sht3x_get_heater_status(sht3x_t *dev, bool *status);
+```
+
+## Usage Example
+
+```c
+#include "sht3x.h"
+
+sht3x_t sensor;
+
+// Initialize
+sht3x_init_desc(&sensor, SHT3X_I2C_ADDR_GND, I2C_NUM_0, GPIO_NUM_21, GPIO_NUM_22);
+i2c_dev_init(&sensor.i2c_dev);
+sht3x_init(&sensor);
+
+// Simple measurement
+float temperature, humidity;
+sht3x_measure(&sensor, &temperature, &humidity);
+printf("Temp: %.2f°C, Humidity: %.2f%%\n", temperature, humidity);
+
+// Advanced: Start periodic measurement
+sht3x_start_measurement(&sensor, SHT3X_PERIODIC_1MPS, SHT3X_HIGH);
+vTaskDelay(pdMS_TO_TICKS(1000));
+sht3x_get_results(&sensor, &temperature, &humidity);
+
+// Cleanup
+sht3x_free_desc(&sensor);
+```
+
+## Measurement Modes
+
+- **SHT3X_SINGLE_SHOT**: One measurement, sensor powers down
+- **SHT3X_PERIODIC_05MPS**: 0.5 measurements per second
+- **SHT3X_PERIODIC_1MPS**: 1 measurement per second
+- **SHT3X_PERIODIC_2MPS**: 2 measurements per second
+- **SHT3X_PERIODIC_4MPS**: 4 measurements per second
+- **SHT3X_PERIODIC_10MPS**: 10 measurements per second
+
+## Repeatability Levels
+
+- **SHT3X_HIGH**: Best accuracy, ~15ms measurement time
+- **SHT3X_MEDIUM**: Balanced, ~6ms measurement time
+- **SHT3X_LOW**: Fastest, ~4ms measurement time
+
+## Dependencies
+
+- i2cdev abstraction layer
+- FreeRTOS
 
 ## Specifications
 

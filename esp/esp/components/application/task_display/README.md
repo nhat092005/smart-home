@@ -1,4 +1,153 @@
-# Task Display
+# Display Update Task
+
+## Overview
+
+FreeRTOS task for periodic OLED display updates with sensor data, system status, and network information.
+
+## Features
+
+- Real-time sensor data display
+- WiFi connection status
+- MQTT broker connection status
+- Device operation mode indicator
+- Multi-page display rotation
+- Automatic refresh cycle
+
+## Task Function
+
+```c
+void display_task(void *pvParameters);
+```
+
+## Display Layout
+
+### Page 1: Sensor Data
+```
++--------------------+
+|  Smart Home        |
+|  Temp: 25.5°C      |
+|  Hum:  65.2%       |
+|  Light: 450 lux    |
+|  Mode: ON          |
++--------------------+
+```
+
+### Page 2: Network Status
+```
++--------------------+
+|  Network Status    |
+|  WiFi: Connected   |
+|  MQTT: Connected   |
+|  IP: 192.168.1.100 |
+|  Time: 14:30:25    |
++--------------------+
+```
+
+## Usage Example
+
+```c
+#include "task_display.h"
+#include "task_manager.h"
+
+void app_main(void) {
+    // Initialize display hardware
+    i2cdev_init();
+    sh1106_init();
+    shared_sensor_init();
+    
+    // Create display task (typically done by task_manager)
+    xTaskCreate(display_task, "display", 3072, NULL, 2, NULL);
+    
+    // Task continuously updates display with latest data
+}
+```
+
+## Task Loop
+
+```c
+void display_task(void *pvParameters) {
+    sensor_data_t data;
+    
+    while (1) {
+        // Get latest sensor readings
+        shared_sensor_get_data(&data);
+        
+        // Clear display
+        sh1106_clear();
+        
+        // Display sensor data
+        sh1106_set_cursor(0, 0);
+        sh1106_printf("Temp: %.1f°C", data.temperature);
+        
+        sh1106_set_cursor(0, 16);
+        sh1106_printf("Hum: %.1f%%", data.humidity);
+        
+        sh1106_set_cursor(0, 32);
+        sh1106_printf("Light: %d lux", data.light);
+        
+        // Display mode
+        sh1106_set_cursor(0, 48);
+        sh1106_printf("Mode: %s", isModeON ? "ON" : "OFF");
+        
+        // Update display
+        sh1106_refresh();
+        
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+```
+
+## Display Modes
+
+- **Normal Mode**: Continuous sensor data updates
+- **Error Mode**: Display error messages
+- **Setup Mode**: Show configuration information
+
+## Task Configuration
+
+- Task name: "display"
+- Stack size: 3072 bytes
+- Priority: 2 (medium)
+- Update interval: 1 second
+
+## Font and Graphics
+
+- Font: 8x8 pixel characters
+- Display: 128x64 pixels (16 columns × 8 rows)
+- Graphics: Line drawing, rectangles, icons
+
+## Power Management
+
+```c
+// Display sleep when idle
+if (idle_timeout > 300) {
+    sh1106_display_off();
+}
+
+// Wake on activity
+if (button_pressed || new_data) {
+    sh1106_display_on();
+    idle_timeout = 0;
+}
+```
+
+## Data Refresh Strategy
+
+1. Read shared sensor data (thread-safe)
+2. Check WiFi connection status
+3. Check MQTT connection status
+4. Update display buffer
+5. Refresh screen
+6. Sleep 1 second
+
+## Dependencies
+
+- sh1106 (OLED driver)
+- shared_sensor
+- mode_manager
+- wifi_manager
+- mqtt_manager
+- FreeRTOS
 
 ## Overview
 

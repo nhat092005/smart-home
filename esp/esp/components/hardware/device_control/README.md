@@ -1,6 +1,100 @@
-# Device Control
+# Device Control Module
 
-Output device control for Fan, Light, and AC.
+## Overview
+
+Output device control module for managing home appliances via relay switches. Provides thread-safe control for fan, light, and AC devices.
+
+## Features
+
+- Three independent device channels
+- ON/OFF/Toggle operations
+- Thread-safe state management with mutex
+- State persistence and query
+- Configurable GPIO pins and active levels
+
+## Controlled Devices
+
+- **DEVICE_FAN**: Fan relay control
+- **DEVICE_LIGHT**: Light relay control
+- **DEVICE_AC**: Air conditioner relay control
+
+## API Functions
+
+### Initialization
+
+```c
+esp_err_t device_control_init(void);
+esp_err_t device_control_deinit(void);
+```
+
+### Control Operations
+
+```c
+esp_err_t device_control_set_state(device_type_t device, device_state_t state);
+esp_err_t device_control_get_state(device_type_t device, device_state_t *state);
+esp_err_t device_control_toggle(device_type_t device);
+```
+
+## Usage Example
+
+```c
+#include "device_control.h"
+
+// Initialize
+device_control_init();
+
+// Turn on fan
+device_control_set_state(DEVICE_FAN, DEVICE_ON);
+
+// Toggle light
+device_control_toggle(DEVICE_LIGHT);
+
+// Check AC state
+device_state_t state;
+device_control_get_state(DEVICE_AC, &state);
+if (state == DEVICE_ON) {
+    printf("AC is running\n");
+}
+
+// Turn off all devices
+device_control_set_state(DEVICE_FAN, DEVICE_OFF);
+device_control_set_state(DEVICE_LIGHT, DEVICE_OFF);
+device_control_set_state(DEVICE_AC, DEVICE_OFF);
+```
+
+## Data Types
+
+### device_type_t
+
+```c
+typedef enum {
+    DEVICE_FAN = 0,
+    DEVICE_LIGHT,
+    DEVICE_AC,
+    DEVICE_MAX
+} device_type_t;
+```
+
+### device_state_t
+
+```c
+typedef enum {
+    DEVICE_OFF = 0,
+    DEVICE_ON = 1
+} device_state_t;
+```
+
+## Configuration
+
+GPIO pins configurable via Kconfig:
+- DEVICE_FAN_PIN: Default GPIO 16
+- DEVICE_LIGHT_PIN: Default GPIO 17
+- DEVICE_AC_PIN: Default GPIO 19
+
+## Dependencies
+
+- ESP-IDF GPIO driver
+- FreeRTOS
 
 ## Features
 

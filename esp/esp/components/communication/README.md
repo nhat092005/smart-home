@@ -2,7 +2,76 @@
 
 ## Overview
 
-The Communication component provides network connectivity and communication capabilities for the ESP32 Smart Home system. This component handles WiFi connection management, MQTT messaging for IoT communication, and HTTP web server for device provisioning.
+Network connectivity and communication layer for the ESP32 Smart Home system. Provides WiFi management, MQTT messaging, and HTTP provisioning server.
+
+## Modules
+
+### wifi_manager
+
+WiFi connection management supporting Station and Access Point modes. Handles credential storage, automatic reconnection, captive portal provisioning with DNS server.
+
+### mqtt_manager
+
+MQTT client implementation using SSL/TLS for secure IoT communication. Supports publish/subscribe operations with configurable topics and QoS levels.
+
+### webserver
+
+HTTP server providing WiFi configuration interface during provisioning. Serves embedded web pages for network scanning and credential setup.
+
+## Architecture
+
+```
+Application
+     |
++----+----+
+|         |
+wifi_manager    mqtt_manager
+     |               |
+     |          (over WiFi)
+     |               |
+webserver      MQTT Broker
+(provisioning)  (HiveMQ)
+```
+
+## Quick Start
+
+```c
+#include "wifi_manager.h"
+#include "mqtt_manager.h"
+
+// Initialize WiFi
+wifi_manager_init();
+wifi_manager_start();
+
+// Wait for connection
+while (!wifi_manager_is_connected()) {
+    vTaskDelay(100);
+}
+
+// Initialize and start MQTT
+mqtt_manager_init();
+mqtt_manager_start();
+
+// Publish data
+mqtt_manager_publish_data(timestamp, temp, humidity, light);
+```
+
+## Configuration
+
+All modules are configurable via Kconfig:
+
+- WiFi: AP SSID, retry count, scan limit
+- MQTT: Broker URI, port, credentials, topics
+- Webserver: HTTP port
+
+## Dependencies
+
+- ESP-IDF WiFi driver
+- ESP-IDF HTTP server
+- ESP-MQTT library
+- ESP-TLS for SSL/TLS
+- NVS Flash
+- utilities/json_helper
 
 ## Architecture
 

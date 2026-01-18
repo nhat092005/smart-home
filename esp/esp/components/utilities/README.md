@@ -1,28 +1,25 @@
 # Utilities Component
 
-Utility libraries for Smart Home ESP32 project.
+## Overview
 
-## Structure
+Collection of utility modules providing common functionality for the ESP32 Smart Home system.
 
-```
-utilities/
-  json_helper/     - JSON parsing and creation utilities
-```
+## Modules
 
-## Components
+### json_helper
 
-| Component | Description |
-|-----------|-------------|
-| json_helper | Safe JSON operations using cJSON library |
+JSON manipulation utilities for creating and parsing MQTT messages. Provides type-safe wrapper functions around cJSON library.
 
 ## Dependencies
 
-- ESP-IDF cJSON component
+- ESP-IDF cJSON library
 
 ## Usage
 
-Add to your component CMakeLists.txt:
+Include the required utility module header in your application:
 
-```cmake
-REQUIRES utilities
+```c
+#include "json_helper.h"
 ```
+
+Refer to individual module README files for detailed API documentation.

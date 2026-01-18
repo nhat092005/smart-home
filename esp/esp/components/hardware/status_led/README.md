@@ -1,6 +1,103 @@
-# Status LED
+# Status LED Module
 
-Status LED indicators for Device, WiFi, and MQTT status.
+## Overview
+
+Status indicator LED control module providing visual feedback for system states. Manages 3 LEDs for device status, WiFi connection, and MQTT connection indication.
+
+## Features
+
+- Three independent LED channels
+- ON/OFF/Toggle operations
+- Thread-safe state management with mutex
+- State query capability
+- Configurable GPIO pins and active levels
+
+## Status LEDs
+
+- **LED_DEVICE**: System/device operation status
+- **LED_WIFI**: WiFi connection status indicator
+- **LED_MQTT**: MQTT broker connection status indicator
+
+## API Functions
+
+### Initialization
+
+```c
+esp_err_t status_led_init(void);
+esp_err_t status_led_deinit(void);
+```
+
+### Control Operations
+
+```c
+esp_err_t status_led_set_state(led_type_t led, led_state_t state);
+esp_err_t status_led_get_state(led_type_t led, led_state_t *state);
+esp_err_t status_led_toggle(led_type_t led);
+```
+
+## Usage Example
+
+```c
+#include "status_led.h"
+
+// Initialize
+status_led_init();
+
+// Turn on device LED
+status_led_set_state(LED_DEVICE, LED_ON);
+
+// Indicate WiFi connected
+status_led_set_state(LED_WIFI, LED_ON);
+
+// Toggle MQTT LED for activity
+status_led_toggle(LED_MQTT);
+
+// Check WiFi LED state
+led_state_t state;
+status_led_get_state(LED_WIFI, &state);
+if (state == LED_ON) {
+    printf("WiFi LED is on\n");
+}
+
+// Turn off all LEDs
+status_led_set_state(LED_DEVICE, LED_OFF);
+status_led_set_state(LED_WIFI, LED_OFF);
+status_led_set_state(LED_MQTT, LED_OFF);
+```
+
+## Data Types
+
+### led_type_t
+
+```c
+typedef enum {
+    LED_DEVICE = 0,
+    LED_WIFI,
+    LED_MQTT,
+    LED_MAX
+} led_type_t;
+```
+
+### led_state_t
+
+```c
+typedef enum {
+    LED_OFF = 0,
+    LED_ON = 1
+} led_state_t;
+```
+
+## Configuration
+
+GPIO pins configurable via Kconfig:
+- LED_DEVICE_PIN: Default GPIO 27
+- LED_WIFI_PIN: Default GPIO 14
+- LED_MQTT_PIN: Default GPIO 13
+
+## Dependencies
+
+- ESP-IDF GPIO driver
+- FreeRTOS
 
 ## Features
 

@@ -1,8 +1,139 @@
-# MQTT Manager
+# MQTT Manager Module
 
 ## Overview
 
-The MQTT Manager component provides secure MQTT communication for the ESP32 Smart Home system. It uses MQTT over SSL/TLS (port 8883) with certificate bundle verification for secure IoT messaging. The component supports configurable topic structure, QoS levels, message retention, and command handling via callbacks.
+Secure MQTT client implementation for IoT messaging using SSL/TLS. Supports publish/subscribe operations with configurable topics, QoS levels, and command handling.
+
+## Features
+
+- MQTT over SSL/TLS (port 8883)
+- Certificate bundle verification
+- Hierarchical topic structure
+- Configurable QoS and retain flags
+- Command subscription with callback system
+- Connection state callbacks
+- Automatic reconnection
+- Thread-safe operations
+- Configurable via Kconfig
+
+## Topic Structure
+
+```
+{base_topic}/{device_id}/{topic_type}
+```
+
+Example: `SmartHome/esp_01/data`
+
+### Topic Types
+
+- **data**: Sensor readings (QoS 0, no retain)
+- **state**: Device state (QoS 1, retain)
+- **info**: Device information (QoS 1, retain)
+- **command**: Control commands (QoS 1, no retain)
+- **response**: Command responses (QoS 1, retain)
+
+## API Functions
+
+### Initialization
+
+```c
+esp_err_t mqtt_manager_init(void);
+esp_err_t mqtt_manager_start(void);
+esp_err_t mqtt_manager_stop(void);
+bool mqtt_manager_is_connected(void);
+```
+
+### Publishing
+
+```c
+esp_err_t mqtt_manager_publish_data(uint32_t timestamp, float temperature, 
+                                    float humidity, int light);
+esp_err_t mqtt_manager_publish_state(uint32_t timestamp, int mode, int interval,
+                                     int fan, int light, int ac);
+esp_err_t mqtt_manager_publish_info(uint32_t timestamp, const char *device_id,
+                                    const char *ssid, const char *ip, const char *broker);
+```
+
+### Callbacks
+
+```c
+void mqtt_manager_register_command_callback(mqtt_command_callback_t callback);
+void mqtt_manager_register_connected_callback(mqtt_event_callback_t callback);
+void mqtt_manager_register_disconnected_callback(mqtt_event_callback_t callback);
+```
+
+## Usage Example
+
+```c
+#include "mqtt_manager.h"
+
+void on_mqtt_command(const char *cmd_id, const char *command, cJSON *params) {
+    printf("Received command: %s (ID: %s)\n", command, cmd_id);
+    
+    if (strcmp(command, "set_device") == 0) {
+        const char *device = json_helper_get_string(params, "device", "");
+        int state = json_helper_get_int(params, "state", 0);
+        // Control device
+    }
+}
+
+void on_mqtt_connected(void) {
+    printf("MQTT connected\n");
+    // Publish initial state
+}
+
+// Initialize
+mqtt_manager_init();
+mqtt_manager_register_command_callback(on_mqtt_command);
+mqtt_manager_register_connected_callback(on_mqtt_connected);
+
+// Start connection
+mqtt_manager_start();
+
+// Wait for connection
+while (!mqtt_manager_is_connected()) {
+    vTaskDelay(pdMS_TO_TICKS(100));
+}
+
+// Publish sensor data
+mqtt_manager_publish_data(time(NULL), 25.5, 60.2, 450);
+
+// Publish device state
+mqtt_manager_publish_state(time(NULL), 1, 5, 1, 0, 1);
+```
+
+## Command Format
+
+Commands received on the command topic:
+
+```json
+{
+    "cmd_id": "a1b2c3",
+    "command": "set_device",
+    "params": {
+        "device": "fan",
+        "state": 1
+    }
+}
+```
+
+## Configuration
+
+Configurable via Kconfig:
+- MQTT_BASE_TOPIC: Base topic prefix (default: SmartHome)
+- MQTT_DEVICE_ID: Device identifier (default: esp_01)
+- MQTT_BROKER_URI: Broker hostname
+- MQTT_BROKER_PORT: Broker port (default: 8883)
+- MQTT_USERNAME: Authentication username
+- MQTT_PASSWORD: Authentication password
+- MQTT_KEEP_ALIVE_SEC: Keep alive interval (default: 120)
+
+## Dependencies
+
+- ESP-MQTT library
+- ESP-TLS
+- ESP certificate bundle
+- utilities/json_helper
 
 ## Features
 
