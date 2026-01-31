@@ -83,6 +83,11 @@ npx cap open android
 - [Mobile CSS](app/www/assets/css/README.md) - Mobile-optimized styles
 - [Mobile JavaScript](app/www/assets/js/README.md) - Mobile app modules
 
+### Video Demo
+
+- [YouTube Demo Video](https://youtu.be/4AQauzxO2xM) - Watch the system in action
+- [YouTube Demo Backup Video](https://youtu.be/38vhAsI9Et0) - Watch the system in action
+
 ## Authors
 
 Le Quang Minh Nhat, Thai Huu Loi, Tran Huu Dao
