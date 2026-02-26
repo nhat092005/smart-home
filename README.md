@@ -85,8 +85,24 @@ npx cap open android
 
 ### Video Demo
 
-- [YouTube Demo Video](https://youtu.be/4AQauzxO2xM) - Watch the system in action
-- [YouTube Demo Backup Video](https://youtu.be/38vhAsI9Et0) - Watch the system in action
+<div align="center">
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://www.youtube.com/watch?v=4AQauzxO2xM">
+        <img src="https://img.youtube.com/vi/4AQauzxO2xM/mqdefault.jpg" width="400"/>
+      </a>
+      <br/><b>TT Kiến trúc và Giao thức IoT - Demo</b>
+    </td>
+    <td align="center">
+      <a href="https://www.youtube.com/watch?v=38vhAsI9Et0">
+        <img src="https://img.youtube.com/vi/38vhAsI9Et0/mqdefault.jpg" width="400"/>
+      </a>
+      <br/><b>TT Kiến trúc và Giao thức IoT - Backup</b>
+    </td>
+  </tr>
+</table>
+</div>
 
 ## Authors
 
