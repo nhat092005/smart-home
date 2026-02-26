@@ -1,0 +1,5 @@
+**/.vscode/**
+**/.devcontainer/**
+**/.idea/**
+**/.cache/**
+**/build/**
