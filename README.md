@@ -83,7 +83,7 @@ npx cap open android
 - [Mobile CSS](app/www/assets/css/README.md) - Mobile-optimized styles
 - [Mobile JavaScript](app/www/assets/js/README.md) - Mobile app modules
 
-### Video Demo
+## Video Demo
 
 <div align="center">
 <table>
