@@ -83,6 +83,11 @@ npx cap open android
 - [Mobile CSS](app/www/assets/css/README.md) - Mobile-optimized styles
 - [Mobile JavaScript](app/www/assets/js/README.md) - Mobile app modules
 
+### Broker
+
+- [MQTT Broker](broker/README.md) - Mosquitto configuration
+- [MQTT Commands](documents/MQTT_COMMANDS.md) - Complete command reference
+
 ## Video Demo
 
 <div align="center">
